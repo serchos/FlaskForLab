@@ -1,0 +1,76 @@
+<!doctype html>
+<head>
+	<title>{% block title %}{% endblock %}</title>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	<link href="https://fonts.googleapis.com/css?family=Fira+Sans" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans|PT+Serif" rel="stylesheet">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css"> 
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script> 
+	
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}"> 
+	<script type="text/javascript" src="{{ url_for('static', filename='Common.js') }}"></script>
+	{% block scripts %}{% endblock %}
+</head>
+
+<!--
+var newCell1 = table.rows[0].insertCell(table.rows[0].cells.length);
+		var newCell2 = table.rows[1].insertCell(table.rows[1].cells.length);
+		
+		var cellSel=$("#Types");
+		var cellSelClone=cellSel.cloneNode(true);
+		cellSelClone.removeAttribute('hidden');
+		
+		var inpt=$('body').append('<input>');		document.createElement('input');
+		inpt.name='ColName';
+		inpt.size='10';
+	
+		newCell1.appendChild(inpt);
+		newCell2.appendChild(cellSelClone);
+
+-->
+
+
+<body>
+	<div class='wrapper'>
+		<div class="page-header">
+			<div class="log_io">
+				{% if not session.logged_in %}
+					<a href="{{ url_for('login') }}"><blink>log in</blink></a>
+				{% else %}
+					<a href="{{ url_for('logout') }}">log out</a>
+				{% endif %}
+			</div>
+			<a href="{{ url_for('menu') }}">
+				<h1 style="margin:0px;">Научно-исследовательская работа</h1>
+			</a>
+		</div>
+		
+		<div class="our_menu">
+			<nav class="navbar navbar-inverse" role="navigation">
+				<div class="container-fluid">
+				<div class="collapse navbar-collapse" id="navbar-main">
+      <!-- Содержимое основной части -->
+				<ul class="nav navbar-nav">
+					<li><a href="{{ url_for('LookBP') }}">Просмотреть БП</a></li>
+					<li><a href="{{ url_for('EditBP') }}">Редактировать БП</a></li>
+					<li><a href="{{ url_for('ExpHandLoad') }}">Создать БП</a></li>
+					<li><a href="{{ url_for('MachLearn') }}">Реализация алгоритмов</a></li>
+				</ul>
+				</div>
+			</nav>
+		</div>
+		{% for message in get_flashed_messages() %}
+			<div >{{ message }}</div>
+		{% endfor %}
+	
+		<div class="pages">
+			{% block body %}{% endblock %}
+		</div>
+
+		<footer class='footfix'>
+			<hr>
+			НИУ МЭИ, 2018
+		</footer>
+	</div>
+</body>

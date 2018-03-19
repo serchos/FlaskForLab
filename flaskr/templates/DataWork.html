@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+{% block title %}Редактирование БП{% endblock %}
+
+{% block scripts %}
+	<script type="text/javascript" src="{{ url_for('static', filename='DataWork.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+	<h1>Редактирование базы прецедентов</h1>
+	<form action="{{ url_for('DataWork') }}" name="myform" id="myform" method=post enctype=multipart/form-data>
+		<dl>
+		<div class="table_scroll">
+			<table class=" table table-striped color_table" name=TT id="ColorTable" style="border:1px solid black; border-collapse:collapse; margin:auto">
+				<tr id="first_tr" name=LOLKEK class="first_tr">
+					{% for str in TabInfo %}
+						{% if str[1]=='id' %}
+							<td name=LOLKEK width="30">{{ str[1] }}</td>
+						{% else %}
+							<td width="140">{{ str[1] }}</td>
+						{% endif %}
+					{% endfor %}
+				</tr>
+
+				{% for str in TabData %}
+					<tr id={{ str[0] }}>
+						{% for i in str%}
+							<td abbr={{ i }}>{{ i }}</td>
+						{% endfor %}
+					</tr>
+				{% endfor %}
+			</table>
+		 </div>
+			<dd>
+				<br>
+				<div class="btn-group">
+					<input name=DataEdit type=button value="Добавить строку" class="btn btn-default" onclick="AddStr()">
+					<input name=DataEdit type=button value="Удалить строку" class="btn btn-default" onclick="DelStr()">
+					<input name=DataEdit type=button value="Добавить столбец" class="btn btn-default" onclick="AddColumn()">
+					<input name=DataEdit type=submit value="Сохранить изменения" class="btn btn-default" onclick="ValidateAddCol()" >
+					<input name=DataEdit type=submit value="Отменить изменения" class="btn btn-default">
+					<input name=DataEdit type=button value="Экспериментальное добавление столбца" class="btn btn-default" onclick="AddColumn2()">
+				</div>
+				<br>
+				<br>
+				<br>
+				<p><input type=file name="BPFile" id="BPFile" class="btn btn-default" style="margin-bottom:7px;" onchange="AddDataFromFile(this)">Загрузить данные из файла</p>
+			</dd>
+		  
+			<select id='DataField' multiple name=DataField hidden></select>
+			<select id='IdField' multiple name=IdField hidden></select>
+			<select id='ColumnField' multiple name=ColumnField hidden></select>
+			<select id='AddStrField' multiple name=AddStrField hidden></select>
+			<select id='DelStrField' multiple name=DelStrField hidden></select>
+	 
+			<dd><p><input name=AddColCount id="AddColCount" hidden></p></dd>
+	 
+		</dl>
+	</form>
+
+
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+{% block title %}Страница 2 для лабы{% endblock %}
+
+{% block scripts %}
+	<script type="text/javascript" src="{{ url_for('static', filename='PageForLab2.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+<body>
+
+	<nav>
+		<ul class="MenuUL1">
+			<li><a class="MenuA" href="#">Главная</a></li>
+			<li><a class="MenuA" href="#">Работа с БП</a>
+				<ul>
+					<li><a class="MenuA" href="{{ url_for('ExpHandLoad') }}">Создать БП</a></li>
+					<li><a class="MenuA" href="{{ url_for('LookBP') }}">Просмотреть БП</a></li>
+					<li><a class="MenuA" href="{{ url_for('EditBP') }}">Редактировать БП</a></li>
+				</ul>
+			</li>
+			<li><a class="MenuA" href="{{ url_for('MachLearn') }}">Реализация алгоритмов</a></li>
+			<li><a class="MenuA" href="#">Лабораторные работы</a>
+				<ul>
+					<li><a class="MenuA" href="{{ url_for('PageForLab1') }}">Страница 1</a></li>
+					<li><a class="MenuA" href="{{ url_for('PageForLab2') }}">Страница 2</a></li>
+					<li><a class="MenuA" href="{{ url_for('PageForLab3') }}">Страница 3</a></li>
+				</ul>
+			</li>
+		</ul>
+	</nav>
+	
+	
+<div class="Timer" hidden>
+	<p id="Hour"><p>:
+	<p id="Minute"><p>:
+	<p id="Second"><p>
+</div>
+
+<div id="Results">
+</div>
+
+<p><button id='StartTest'>Начать тест</button></p>
+
+
+<div id="Questions" hidden>
+
+	<legend>Вопрос 1</legend>
+	<div id="Question1" class="panel panel-default panel-body">
+			<p>Здесь вопрос номер 1</p>
+			<p><input type=radio name='Question1' value=false>Здесь ответ 1</p>
+			<p><input type=radio name='Question1' value=false>Здесь ответ 2</p>
+			<p><input type=radio name='Question1' value=true>Здесь ответ 3</p>
+			<p><input type=radio name='Question1' value=false>Здесь ответ 4</p>
+	</div>
+	
+	<legend>Вопрос 2</legend>
+	<div id="Question2" class="panel panel-default panel-body">
+			<p>Здесь вопрос номер 3</p>
+			<p><input type=radio name='Question2' value=true>Здесь ответ 1</p>
+			<p><input type=radio name='Question2' value=false>Здесь ответ 2</p>
+			<p><input type=radio name='Question2' value=false>Здесь ответ 3</p>
+			<p><input type=radio name='Question2' value=false>Здесь ответ 4</p>
+	</div>
+	
+	<legend>Вопрос 3</legend>
+	<div id="Question3" class="panel panel-default panel-body">
+			<p>Здесь вопрос номер 3</p>
+			<p><input type=checkbox name='Question3' value=false>Здесь ответ 1</p>
+			<p><input type=checkbox name='Question3' value=true>Здесь ответ 2</p>
+			<p><input type=checkbox name='Question3' value=false>Здесь ответ 3</p>
+			<p><input type=checkbox name='Question3' value=true>Здесь ответ 4</p>
+			<p><input type=checkbox name='Question3' value=false>Здесь ответ 5</p>
+			<p><input type=checkbox name='Question3' value=true>Здесь ответ 6</p>
+	</div>
+		
+	<legend>Вопрос 4</legend>
+	<div id="Question4" class="panel panel-default panel-body">
+			<p>Здесь вопрос номер 4</p>
+			<p><input type=checkbox name='Question4' value=false>Здесь ответ 1</p>
+			<p><input type=checkbox name='Question4' value=false>Здесь ответ 2</p>
+			<p><input type=checkbox name='Question4' value=true>Здесь ответ 3</p>
+			<p><input type=checkbox name='Question4' value=true>Здесь ответ 4</p>
+			<p><input type=checkbox name='Question4' value=false>Здесь ответ 5</p>
+			<p><input type=checkbox name='Question4' value=false>Здесь ответ 6</p>
+	</div>
+</div>
+
+<p><button id='EndTest' hidden>Закончить тест</button></p>
+
+</body>
+
+{% endblock %}
+
+
+

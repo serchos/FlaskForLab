@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block title %}Просмотр БП{% endblock %}
+<!--{% block navi %}<li class="active">Просмотреть БД</li>{% endblock %}-->
+
+{% block body %}
+	<h1>Просмотр загруженной базы прецедентов</h1>
+	<br>
+	<form action="{{ url_for('ExecDataFromTable') }}" method=post>
+		<p>
+			<select name="TableChoice" onchange="this.form.submit()" class="select">
+				<option selected>Выберите базу для просмотра</option>
+				{% for i in TabList %}
+					<option value={{ i[1] }}>{{ i[1] }}</option>
+				{% endfor %}
+			</select>
+		</p>  
+	</form>
+<!--<div class="btn-group">
+  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Выберите базу для просмотра<span class="caret"></span></button>
+  <ul class="dropdown-menu" role="menu">
+  	{% for i in TabList %}
+		<option value={{ i[1] }}>{{ i[1] }}</option>
+	{% endfor %}
+  </ul>
+</div>-->
+	{% if TabData %}
+	<div class="table_scroll">
+		<table class="table table-striped">
+			{% for str in TabData %}
+				<tr>
+					{% for i in str %}
+						<td>{{ i }}</td>
+					{% endfor %}
+				</tr>
+			{% endfor %}
+		</table>
+	</div>
+	{% endif %}
+
+{% endblock %}

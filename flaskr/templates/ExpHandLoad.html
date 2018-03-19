@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% block title %}Создание БП{% endblock %}
+
+{% block scripts %}
+	<script type="text/javascript" src="{{ url_for('static', filename='ExpHandLoad.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+	<h1>Экспериментальное создание базы прецедентов</h1>
+	<br>
+	<form action="{{ url_for('AcceptAndCreateScheme') }}" method=post enctype=multipart/form-data>
+		<p>Укажите имя будущей базы прецедентов:<input name=BPName id="BPName" maxlength="20" size="20" style="margin-left: 5px;"></p>
+		<p>Введите число столбцов:<input name="ColCount" id="ColCount" type="number" maxlength="10" size="10" style="margin-left: 5px;"></p>
+		<p>
+			<input name=Create type=button class="btn btn-default" value='Создать столбцы' onclick="javascript: AddColumns()">
+			<input name=Create type=button class="btn btn-default" value='Добавить столбец в конец' onclick="javascript: AddToEnd()">
+			<input name=Create type=button class="btn btn-default" value='Удалить столбец с конца' onclick="javascript: DelFromEnd()">
+			<input name=Create type=button class="btn btn-default" value='Добавить столбец в указанное место' onclick="javascript: AddChoice()">
+			<input name=Create type=button class="btn btn-default" value='Удалить выбранный столбец' onclick="javascript: DelChoice()">
+			<input name=Create type=button class="btn btn-default" value='Снять все выделенные объекты' onclick="javascript: RemoveMark()">
+		</p>
+		
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<p>
+					<input type=radio name="ChangeAllTypes1" value="0" onchange="javascript: ChangeAllTypes(this.value)" style="margin-right:5px">Все типы "целый"
+					<input type=radio name="ChangeAllTypes1" value="1" onchange="javascript: ChangeAllTypes(this.value)" style="margin-left:15px">Все типы "вещественный"
+					<input type=radio name="ChangeAllTypes1" value="2" onchange="javascript: ChangeAllTypes(this.value)" style="margin-left:15px">Все типы "текст"
+					<input type=radio name="ChangeAllTypes1" value="3" onchange="javascript: ChangeAllTypes(this.value)" style="margin-left:15px">Все типы "другой"
+				</p>
+				<p><input type=checkbox onchange="javascript: CustomNames(this)">Программные имена столбцов</p>  
+			</div>
+		</div>
+		
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<p>Создать БП по файлу</p>
+				<p><input type="file" name="BPFile" id="BPFile" onchange="CreateSchemeFromFile(this)" style="margin-bottom:5px">Создать схему  БП по файлу</p>
+				<p><input type=checkbox checked name="CopyDataToBP">Скопировать данные из файла в БП</p> 
+				<p><input type=checkbox checked id="IdInFile" name="IdInFile">В файле есть колонка ID</p>
+			</div>
+		</div>
+ 
+		<table class="NewBP table table-bordered" id="Scheme"></table>
+		<p><input type=submit id='Accept' hidden value='Создать таблицу и загрузить данные' onclick='FormValidate(event)'></p>
+	</form> 
+
+	<select id=Types name='ColType' hidden>
+		<option>Целый</option>
+		<option>Вещественный</option>
+		<option>Текст</option>
+		<option>Другой</option>
+	</select>
+  
+{% endblock%}

@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+{% block title %}Редактирование БП{% endblock %}
+<!--{% block navi %}<li class="active">Редактировать БД</li>{% endblock %}-->
+{% block body %}
+<script type="text/javascript">
+    function exception_func(e) {
+	var tabChoice=document.getElementById('TableChoice');
+     if (tabChoice.value=='Выберите базу')
+	  {
+        alert("Сначала выберите базу");
+		e.returnValue=false;
+      }
+    }
+  </script>
+	<h1>Редактирование базы прецедентов</h1>
+ 
+	<form action="{{ url_for('TabEdit') }}" method=post enctype=multipart/form-data>
+		<p>
+			<select id='TableChoice' name="TableChoice" class="select" style="padding-right: 115px">
+				<option selected>Выберите базу</option>
+				{% for i in TabList %}
+					<option value={{ i[1] }}>{{ i[1] }}</option>
+				{% endfor %}
+			</select>
+		</p> 
+	
+		<p><input name="TabEdit" type=submit class="btn btn-default" onclick="javascript: exception_func(event)" value="Удалить"></p>
+		<br>
+		<p><input name="NewBPName" maxlength="20" size="20" style="margin-right: 20px">
+			<input name="TabEdit" type=submit class="btn btn-default" onclick="javascript: exception_func(event)" value="Переименовать" >
+		</p>
+		<br>
+		<p><input name="TabEdit" type=submit class="btn btn-default" onclick="javascript: exception_func(event)" value="Работа с данными"></p>
+	</form>
+  
+  
+{% endblock %}
