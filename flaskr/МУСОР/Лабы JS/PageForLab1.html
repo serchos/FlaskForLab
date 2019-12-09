@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+{% block title %}Страница 1 для лабы{% endblock %}
+
+{% block scripts %}
+	<script type="text/javascript" src="{{ url_for('static', filename='PageForLab1.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+<body>
+
+<table id="Calendar" class="table-bordered" style="border:2px solid black">
+	<tr>
+		<td>ПН</td>
+		<td>ВТ</td>
+		<td>СР</td>
+		<td>ЧТ</td>
+		<td>ПТ</td>
+		<td>СБ</td>
+		<td>ВС</td>
+	</tr>
+	<tr></tr>
+	<tr></tr>
+	<tr></tr>
+	<tr></tr>
+	<tr></tr>
+	<tr></tr>
+
+</table>
+
+<div id="Clock" class="Timer">
+	<p id="Hour"></p>:
+	<p id="Minute"></p>:
+	<p id="Second"></p>
+</div>
+
+<div id="Banner" class="Banner">
+	<img src="{{ url_for('static', filename='business-sausage.jpg') }}">
+</div>
+
+<div id="Questions">
+	<div id="LoadQuestions">
+		<p>Загрузить вопросы</p>
+		<input type="file" id="UserFile" onchange="LoadQuestions(this)">
+	</div>
+</div>
+
+
+</body>
+
+{% endblock %}
+
+
+

@@ -1,0 +1,225 @@
+		<div class="panel panel-default LeftBlock">
+			<div class="panel-heading">Работа со строками</div>
+			<div class="panel-body">
+			
+				<div class="panel panel-default LeftBlock">
+					<div class="panel-heading">Выделение строк</div>
+					<div class="panel-body">
+						<label>
+							Выделить/снять выделение строк
+							<br><input type=radio name=Highlight value=on checked>Выделить строки
+							<br><input type=radio name=Highlight value=off>Снять выделение строк
+						</label>
+						<br>
+						<label>
+							Укажите диапазон выделения
+							<br>От<input type=number id="HighlightFrom">До<input type=number id="HighlightTo">
+						</label>
+						<br>
+						<br>
+						<input type=button value="Выделить/снять выделение строк" class="btn btn-default" onclick="HighlightStr()">
+					</div>
+				</div>
+				
+				<div class="panel panel-default RightBlock">
+					<div class="panel-heading">Случайное выделение строк</div>
+					<div class="panel-body">
+						<label>
+							Количество выделяемых строк
+							<input type=number id="RandomHighlightCount">
+						</label>
+						<br>
+						<label>
+							Укажите диапазон выделения
+							<br>От<input type=number id="RandomHighlightFrom">До<input type=number id="RandomHighlightTo">
+						</label>
+						<br>
+						<br>
+						<input type=button value="Выделить случайные строки" class="btn btn-default" onclick="RandomHighlightStr()">
+					</div>
+				</div>
+
+				
+				<div class="DivClearL"></div>
+				
+				<div class="panel panel-default LeftBlock">
+					<div class="panel-heading">Добавить строки</div>
+					<div class="panel-body">
+						<label>
+							Количество строк
+							<input type=number id="InsertStrCount">
+						</label>
+						<br><input type=button id="InsertManyStr" value="Добавить строки" class="btn btn-default">
+					</div>
+				</div>
+				
+				<div class="panel panel-default RightBlock">
+					<div class="panel-body">
+						<input type=button id="InsertOneStr" value="Добавить строку" class="btn btn-default">
+						<br><input type=button value="Удалить выделенные строки" class="btn btn-default" onclick="DeleteStr()">
+						<br><input type=button value="Очистить содержимое таблицы" class="btn btn-default" onclick="DeleteAllStr()">
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+		<div class="panel panel-default RightBlock">
+			<div class="panel-heading">Работа со столбцами</div>
+			<div class="panel-body">
+				<div class="panel panel-default">
+					<div class="panel-heading">Создать новый столбец</div>
+					<div class="panel-body">
+						<label>
+							Имя нового столбца
+							<input id=NewColumnId>
+						</label>
+						<br>
+						<label>
+							Тип данных нового столбца
+							<select id=NewColumnType>
+								<option>Целый</option>
+								<option>Вещественный</option>
+								<option>Текст</option>
+								<option>Другой</option>
+							</select>
+						</label>
+						<br>
+						<label>
+							Значение по умолчанию
+							<input id=NewColumnDefault>
+						</label>
+						<br><input name=DataEdit type=button value="Добавить столбец" class="btn btn-default" onclick="InsertColumn()">
+					</div>
+				</div>
+				<br><input name=DataEdit type=button value="Удалить столбец" class="btn btn-default" onclick="DeleteColumn()">	
+			</div>
+		</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		<div class="panel panel-default LeftBlock">
+			<div class="panel-heading">Работа с данными</div>
+			<div class="panel-body">
+				<div class="panel panel-default LeftBlock">
+					<div class="panel-heading">Загрузить данные из файла</div>
+					<div class="panel-body">
+						<input type=file id="BPFile" style="margin-bottom:7px;">
+						<br>
+						<label>
+							В файле есть колонка ID
+							<input type=checkbox id="IdInFile">
+						</label>
+						<br><input type=button value="Загрузить данные" onclick="AddDataFromFile()">
+					</div>				
+				</div>
+				
+				<div class="panel panel-default RightBlock">
+					<div class="panel-heading">Экспорт в файл</div>
+					<div class="panel-body">
+						<form action="/ExportToFile" method="post" enctype="multipart/form-data">
+							<input type=submit name="ExportToFile" value="Экспорт БП в файл" id="ExportBPToFile" class="btn btn-default">
+							<br><input type=submit name="ExportToFile" value="Экспорт тестовой выборки в файл" id="ExportTestSampleToFile" class="btn btn-default">
+							<br><input type=submit name="ExportToFile" value="Экспорт обучающей выборки в файл" id="ExportTrainSampleToFile" class="btn btn-default">
+							
+							<input type=text name="HiddenTableChoice" hidden>
+							<input type=text name="HiddenTestSample" hidden>
+						</form>
+					</div>
+				</div>
+				
+			</div>
+		</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+		<div class="panel panel-default RightBlock">
+			<div class="panel-heading">Оптимизация базы прецедентов</div>
+			<div class="panel-body">
+			
+				<label>
+					Используемый алгоритм
+					<select id=OptAlgol class="select" onchange="ShowOptAlgolOptions()">
+						<option value=Classification selected>Алгоритм классификации</option>
+						<option value=KMeans>Алгоритм k-средних</option>							
+						<option value=TimurAlgorithm>Алгоритм Тимура</option>
+						</select>
+				</label>
+						
+				<div id=DivClassification>
+					<label>
+						Степень сходства
+						<input id='ClassSimilarity' maxlength="20" size="20" class="select">
+					</label>
+					<br>
+					<label>
+						Выбор метрики
+						<select id='ClassMetric' class="select">
+							<option value=MetricL1>Метрика L1</option>
+							<option value=MetricEuclid>Евклидова метрика</option>
+							<option value=MetricChebyshev>Метрика Чебышева</option>
+						</select>
+					</label>
+				</div>
+						
+				<div id=DivKMeans hidden>
+					<label>
+						Количество кластеров
+						<input id='KMClusterCount' maxlength="20" size="20" class="select">
+					</label>
+					<br>
+					<label>
+						Алгоритм нахождения начальных центров кластеризации
+						<select id='KMPrimaryCenter' class="select">
+							<option value=Forgy>Метод Forgy</option>
+							<option value=RandomPartitioning>Метод случайного разделения (Random Partitioning)</option>
+							<option value=AnswerPartitioning>Метод ответного разделения</option>
+						</select>
+					</label>
+					<br>
+					<label>
+						Выбор метрики
+						<select id='KMMetric' class="select">
+							<option value=MetricL1>Метрика L1</option>
+							<option value=MetricEuclid>Евклидова метрика</option>
+							<option value=MetricChebyshev>Метрика Чебышева</option>
+						</select>
+					</label>
+				</div>
+					
+				<br>					
+				<input type=button value="Повысить эффективность" class="btn btn-default" onclick="Optimization()">
+			</div>
+		</div>

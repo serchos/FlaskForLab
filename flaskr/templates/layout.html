@@ -10,67 +10,73 @@
 	
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}"> 
 	<script type="text/javascript" src="{{ url_for('static', filename='Common.js') }}"></script>
+
 	{% block scripts %}{% endblock %}
 </head>
 
-<!--
-var newCell1 = table.rows[0].insertCell(table.rows[0].cells.length);
-		var newCell2 = table.rows[1].insertCell(table.rows[1].cells.length);
+
+<body class='Wrapper'>
+
+	<div class="LayoutPageHeader">
+		<a href="{{ url_for('MainPage') }}">
+			  <img src="{{ url_for('static', filename='CBR.png') }}" align="left">
+			  <h1 style="margin:10px;">Научно-исследовательская работа</h1>
+		</a>
 		
-		var cellSel=$("#Types");
-		var cellSelClone=cellSel.cloneNode(true);
-		cellSelClone.removeAttribute('hidden');
-		
-		var inpt=$('body').append('<input>');		document.createElement('input');
-		inpt.name='ColName';
-		inpt.size='10';
-	
-		newCell1.appendChild(inpt);
-		newCell2.appendChild(cellSelClone);
-
--->
-
-
-<body>
-	<div class='wrapper'>
-		<div class="page-header">
-			<div class="log_io">
-				{% if not session.logged_in %}
-					<a href="{{ url_for('login') }}"><blink>log in</blink></a>
-				{% else %}
-					<a href="{{ url_for('logout') }}">log out</a>
-				{% endif %}
-			</div>
-			<a href="{{ url_for('menu') }}">
-				<h1 style="margin:0px;">Научно-исследовательская работа</h1>
-			</a>
+		<div class="log_io">
+			{% if session.username %}
+				<a href="{{ url_for('logout') }}">log out</a>
+				<p>Текущий сеанс: {{session.username}}</p>
+			{% else %}
+				<a href="{{ url_for('login') }}">log in</a>
+			{% endif %}
 		</div>
-		
-		<div class="our_menu">
-			<nav class="navbar navbar-inverse" role="navigation">
-				<div class="container-fluid">
-				<div class="collapse navbar-collapse" id="navbar-main">
-      <!-- Содержимое основной части -->
-				<ul class="nav navbar-nav">
-					<li><a href="{{ url_for('LookBP') }}">Просмотреть БП</a></li>
-					<li><a href="{{ url_for('EditBP') }}">Редактировать БП</a></li>
-					<li><a href="{{ url_for('ExpHandLoad') }}">Создать БП</a></li>
-					<li><a href="{{ url_for('MachLearn') }}">Реализация алгоритмов</a></li>
-				</ul>
-				</div>
-			</nav>
-		</div>
-		{% for message in get_flashed_messages() %}
-			<div >{{ message }}</div>
-		{% endfor %}
-	
-		<div class="pages">
-			{% block body %}{% endblock %}
-		</div>
-
-		<footer class='footfix'>
-			<hr>
-			НИУ МЭИ, 2018
-		</footer>
 	</div>
+		
+	<div id="MainMenu">
+		<nav class="navbar navbar-inverse" role="navigation">
+			<div class="container-fluid">
+				<!--Название сайта и кнопка раскрытия меню для мобильных-->
+				
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="{{ url_for('MainPage') }}">Главная страница</a>
+				</div>
+				
+				<!-- Само меню -->
+				<div class="collapse navbar-collapse">
+					<ul class="nav navbar-nav">
+						<li {% block MenuExpHandLoad %}{% endblock %}><a href="{{ url_for('ExpHandLoad') }}">Создать БП</a></li>
+						<li {% block MenuStructLoad %}{% endblock %}><a href="{{ url_for('StructLoad') }}">Создать структурированную БП</a></li>
+						<li {% block ActiveMenuLookBP %}{% endblock %}><a href="{{ url_for('LookBP') }}">Просмотреть БП</a></li>
+						<li {% block ActiveMenuEditBP %}{% endblock %}><a href="{{ url_for('EditBP') }}">Редактировать БП</a></li>
+						<li {% block MenuMachLearn %}{% endblock %}><a href="{{ url_for('MachLearn') }}">Реализация алгоритмов</a></li>
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Справочные материалы <span class="caret"></span></a>
+							<ul class="dropdown-menu" role="menu">
+								<li><a href="#">Работа с системой</a></li>
+								<li><a href="#">Задания</a></li>
+								<li><a href="#">Команда разработчиков</a></li>
+							</ul>
+						</li>						
+					</ul>
+				</div>
+			</div>
+		</nav>
+	</div>
+	
+	<div class="Pages">
+		{% block body %}{% endblock %}
+	</div>
+
+	<footer id='Footer'>
+		<hr>
+		НИУ МЭИ, 2019
+	</footer>
+
 </body>

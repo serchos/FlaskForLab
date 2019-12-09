@@ -1,0 +1,403 @@
+{% extends "layout.html" %}
+{% block title %}Реализация алгоритмов{% endblock %}
+
+{% block scripts %}
+	<script type="text/javascript" src="{{ url_for('static', filename='MachLearn.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+	
+<script type="text/javascript">
+    function exception_func(e) 
+	{
+		var tabChoice=document.getElementById('TabList');
+		if (tabChoice.value=='Выберите базу прецедентов')
+		{
+			alert("Сначала выберите базу");
+			e.returnValue=false;
+		}
+		$("#DivDataTable").attr("hidden", false);
+    }
+</script>
+
+	<h1>Реализация алгоритмов машинного обучения</h1>
+
+	<form action="{{ url_for('ShowTab') }}" method=post>
+		<select name="TabList" id="TabList" class="select" style="display: inline-block;">
+			{% if BPName %}
+				<option selected>{{ BPName }}</option>
+			{% else %}
+				<option selected>Выберите базу прецедентов</option>
+			{% endif %}
+			{% for tab in TabList %}
+				{% if tab[1].find('Description') == -1 %}
+					<option>{{ tab[1] }}</option>
+				{% endif %}
+			{% endfor %}
+		</select>
+
+		<input type=submit  value='Показать содержимое' class="btn btn-default" onclick="javascript: exception_func(event)" style="display: inline-block; margin-left: 10px">
+	</form>
+
+	<div id="DivDataTable" class="table_scroll" {% if not TabInfo %} hidden {% endif %}>
+		<table id="DataTable" class="table table-striped DataTableCl" style="border:1px solid black; border-collapse:collapse;">
+			<tr id="first_tr" class="first_tr">
+				{% if TabInfo %}
+					<td width="30">{{TabInfo[0][1]}} </td>
+					{% for str in TabInfo[1:] %}
+						<td width="140">{{ str[1] }}</td>
+					{% endfor %}
+				{% endif %}
+			</tr>
+		
+			{% for str in TabData %}
+				<tr>
+					{% for i in str %}
+						<td>{{ i }}</td>
+					{% endfor %}
+				</tr>
+			{% endfor %}
+		</table>
+	</div>
+	<div class = "in_row_div panel-default">
+	<input type=radio name='SwitchTSCO' id='SwitchTSCO1' value='TS' checked>Выбрать обучающую выборку в таблице
+	<input type=radio name='SwitchTSCO' id='SwitchTSCO2' value='CO'  style="margin-left: 10px">Выбрать класс. данные в таблице
+	<input type=radio name='SwitchTSCO' id='SwitchTSCO3' value='CDT'  style="margin-left: 10px">Добавить класс. данные
+	</div>
+	<!--<p><input type=radio name='SwitchTSCO' id='SwitchTSCO1' value='TS' checked>Выбрать обучающую выборку в таблице</p>
+	<p><input type=radio name='SwitchTSCO' id='SwitchTSCO2' value='CO'>Выбрать класс. данные в таблице</p>
+	<p><input type=radio name='SwitchTSCO' id='SwitchTSCO3' value='CDT'>Добавить класс. данные</p>-->
+	<p>
+		Диапазон
+		<input type=number name='RangeFrom' id='RangeFrom' type='number'>
+		-
+		<input type=number name='RangeTo' id='RangeTo' type='number' onblur="javascript: IdRange()">
+	</p>
+
+
+	<form id="MLForm" action="{{ url_for('GoMachLearn') }}" method=post>
+		<dd>
+		<table hidden id="ClassDataTable" name="ClassDataTable" class="table table-striped ClassDataTable" style="border:1px solid black; border-collapse:collapse;" >
+			<tr id="first_tr" class="first_tr">
+				{% if TabInfo %}
+					<td width="30">{{TabInfo[0][1]}}</td>
+					{% for i in TabInfo[1: TabInfo|length-1] %}
+						<td width="140">{{ i[1] }}</td>
+					{% endfor %}
+				{% endif %}
+			</tr>
+			<!--Delete this below-->
+			<tr>
+				{% for i in range(0, (TabInfo| length)-1) %}
+					<td>{{ i }} </td>
+				{% endfor %}
+			</tr>
+		</table>
+			
+		<p><input hidden id="AddPrecButton" type=button value='Добавить прецедент' onclick="javascript: AddStr()"></p>
+		
+		<div class ="in_row_div panel panel-default">
+		<div>
+			<p>Выбор алгоритма</p>
+			<p><select id=Algol name='ExtractionAlgorithm' class="select">
+				<option value=KNN>Метод ближайшего соседа</option>
+			</select></p>
+		</div>
+		<div>
+		<p>Выбор метрики</p>
+		<select id=Metric name='Metric' class="select">
+			<option value=MetricL1>Метрика L1</option>
+			<option value=MetricEuclid>Евклидова метрика</option>
+			<option value=MetricChebyshev>Метрика Чебышева</option>
+		</select>
+		</div>
+			<div>
+				<p>Количество соседей</p>
+				<input name='NeibCount' id="NeibCount" maxlength="20" size="20" class="select">
+			</div>
+			
+			<div>
+				<p><input type=checkbox checked name='WeightOn' id="WeightOn">Учитывать веса параметров</p>
+			</div>
+		</div>
+		
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<p>Подбор оптимального числа соседей</p>
+				<p>Используемая кросс-валидация</p>
+				<p><select id=CrossValidation name='CrossValidation' class="select" onchange="CrossValidationFun(this.value)">
+					<option value=KFoldCV selected>Контроль по K блокам</option>
+					<option value=HoldOutCV>Контроль на отложенных данных</option>
+					<option value=LOOCV>Контроль по отдельным объектам</option>
+				</select></p>
+						
+				<div id=DivKFoldCV>
+					<p>Количество блоков</p>
+					<p><input name='BlockCount' maxlength="20" size="20" class="select"></p>
+				</div>
+				
+				<div id=DivHoldOutCV hidden>
+					<p>Доля обучающей выборки </p>
+					<p><input name='PercentTS' maxlength="20" size="20" class="select"></p>
+					<p>Количество итерций</p>
+					<p><input name='IterationCount' maxlength="20" size="20" class="select"></p>
+				</div>		
+						
+				<div id=DivCrossValidation>
+					<p>Выбор метрики</p>
+					<p><select id=CVMetric name='CVMetric' class="select">
+						<option value=MetricL1>Метрика L1</option>
+						<option value=MetricEuclid>Евклидова метрика</option>
+						<option value=MetricChebyshev>Метрика Чебышева</option>
+					</select></p>
+				</div>
+			</div>
+		</div>
+		
+		<p><input name=Start type=submit value='Подобрать!' class="btn btn-default"></p>
+		
+		
+		<p><input name=Start type=button value='Оптимизировать' class="btn btn-default" onclick="javascript: $('#Optimize').click();"></p>
+		<p><input name=Start type=submit value='Старт!' class="btn btn-default" onclick="javascript: RememberId(event, 'MLForm', 'ClassDataTable')"></p>
+
+		<p><select id="TSField" multiple name="TSField" hidden></select></p>
+		<p><select id="COField" multiple name="COField" hidden></select></p>
+		</dd>
+	</form>  
+
+	<form id="OptimizeData" action="{{ url_for('OptimizeData') }}" method=post>
+			
+		{% if RepDataList and RepDataList!=[] %}
+			<table id="RepDataTable" name="RepDataTable" class="table table-bordered DataTableCl" style="border:1px solid black; border-collapse:collapse;" >
+				<tr id="first_tr" class="first_tr">
+					{% if TabInfo %}
+						<td width="30">{{TabInfo[0][1]}}</td>
+						{% for i in TabInfo[1: TabInfo|length-1] %}
+							<td width="140">{{ i[1] }}</td>
+						{% endfor %}
+					{% endif %}
+				</tr>
+				
+				{% for i in RepDataList %}
+					<tr>
+						{% for j in i %}
+							<td>{{ j }} </td>
+						{% endfor %}
+					</tr>
+				{% endfor %}
+			</table>
+		{% endif %}
+			
+		<p><input name=Optimize id=DelRepData type=submit value="Удалить" class="btn btn-default" onclick="javascript: SaveDeleteRep()"></p>
+		<input name=Optimize id=Optimize type=submit value="Оптимизировать" class="btn btn-default" hidden></p>
+		<p><select id="RepSelect" multiple name="RepSelect" hidden></select></p>
+	</form>
+		
+		
+    {% if NumPar %}
+		{% if NumPar==5 %}
+		<div class="table_scroll">
+			<table id="AnswerTable" class="table table-striped" style="border:1px solid black; border-collapse:collapse;">
+				<tr id="first_tr" class="first_tr">
+					<td width="30">{{ TabInfo[0][1] }}</td>
+					
+					{% for counter in range(1, TabInfo|length-1) %}
+						<td width="140">{{ TabInfo[counter][1] }}</td>
+					{% endfor %}
+					
+					<td width="140">Истинный ответ</td>	
+					<td width="140">Ответ классификатора</td>
+					<td width="140">Кол-во проголосовавших</td>
+				</tr>
+				
+				{% for id, str, reans, ans, max in COData %}
+					<tr>
+						<td>{{ id }}</td>	
+						{% for counter in range(0, str|length-1) %}
+							<td>{{ str[counter] }}</td>
+						{% endfor %}
+						<td>{{ reans[0] }}</td>	
+						<td>{{ ans }}</td>
+						<td>{{ max }}/{{ NeibCount }}</td>	
+					</tr>
+				{% endfor %}
+			</table>
+		</div>
+			<p>Точность классификации: {{ Accuracy }}</p>
+			
+		{% else %}
+			<table id="AnswerTable" class="table table-striped" style="border:1px solid black; border-collapse:collapse;">
+				<tr id="first_tr" class="first_tr">
+					<td width="30">{{ TabInfo[0][1] }}</td>
+					
+					{% for counter in range(1, TabInfo|length-1) %}
+						<td width="140">{{ TabInfo[counter][1] }}</td>
+					{% endfor %}
+						
+					<td width="140">Ответ классификатора</td>
+					<td width="140">Кол-во проголосовавших</td>
+				</tr>	
+
+					{% for id, str, ans, max in COData %}
+						<tr>
+							<td>{{ id }}</td>	
+							{% for counter in range(0, str|length) %}
+								<td>{{ str[counter] }}</td>
+							{% endfor %}
+							<td>{{ ans }}</td>
+							<td>{{ max }}/{{ NeibCount }}</td>	
+						</tr>
+					{% endfor %}			
+			</table>
+
+			
+		<form id="PrecForm" action="{{ url_for('SavePrecInTable') }}" method=post>
+			<p><input type=submit value='Сохранить прецеденты в таблицу' class="btn btn-default" onclick="javascript: CreateSelectForRows2(event, 'PrecForm', 'AnswerTable')"></p>
+		</form>			
+		{% endif %}
+	{% endif %}
+
+	{% if AccList %}
+		<table id="DataTable" class="table table-striped DataTableCl" style="border:1px solid black; border-collapse:collapse;">
+			<tr>
+				<td>Количество соседей</td>
+				{% for Neib in range(AccList[0], AccList[1]) %}
+					<td>{{ Neib }}</td>
+				{% endfor %}
+			</tr>
+				
+			<tr>
+				<td>Точность классификации</td>
+				{% for i in range(2, AccList|length) %}
+					<td>{{ AccList[i] }}</td>
+				{% endfor %}
+			</tr>
+		</table>
+		
+		<p>Максимальная точность классификации: {{ MaxAcc }} достигается при количестве соседей: {{ MaxNeibCount }}</p>
+	{% endif %}
+
+
+
+
+
+	
+		
+		<!--
+		
+		{% if COData %}
+			<table id="AnswerTable" class="table table-bordered" style="border:1px solid black; border-collapse:collapse;">
+				<tr id="first_tr" class="first_tr">
+					{% for str in TabInfo %}
+						{% if str[1]=='id' %}
+							<td width="30">{{ str[1] }}</td>
+						{% else %}
+							<td width="140">{{ str[1] }}</td>
+						{% endif %}
+					{% endfor %}
+					<td width="140">Ответ классификатора</td>
+					<td width="140">Кол-во проголосовавших</td>
+				</tr>
+
+				{% if NumPar==4 %}
+					{% for id, str, ans, max in COData %}
+						<tr>
+							<td>{{ id }}</td>	
+							{% for counter in range(0, str|length) %}
+								<td>{{ str[counter] }}</td>
+							{% endfor %}
+							<td>{{ ans }}</td>
+							<td>{{ max }}/{{ NeibCount }}</td>	
+						</tr>
+					{% endfor %}
+				{% else %}
+					{% for id, str, reans, ans, max in COData %}
+						<tr>
+							<td>{{ id }}</td>	
+							{% for counter in range(0, str|length-1) %}
+								<td>{{ str[counter] }}</td>
+							{% endfor %}
+							<td>{{ reans[0] }}</td>	
+							<td>{{ ans }}</td>
+							<td>{{ max }}/{{ NeibCount }}</td>	
+						</tr>
+					{% endfor %}
+				{% endif %}
+			</table>
+				
+			<p>
+				Точность классификации: {{ Accuracy }}
+			</p>
+	
+		{% endif %}
+		-->
+		
+		<script type="text/javascript">
+function AddStr()
+{
+	var Table=document.getElementById("ClassDataTable");
+	var NewRow=Table.insertRow(Table.rows.length);
+	var i=0;
+	var NewId;
+	
+	{% for j in range(0, (TabInfo| length)-1) %}
+		var NewCell=NewRow.insertCell(NewRow.length);
+		
+		if (i==0) 
+		{
+			NewId=Number(Table.rows[Table.rows.length-2].cells[0].innerHTML);
+			if (isNumeric(NewId)==true)
+				NewId++;
+			else 
+				NewId=1;
+			NewCell.innerHTML=NewId;
+			i++;
+		}
+		NewCell.height=40;
+	{% endfor %}
+
+	return NewId;
+}
+
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+$(window).keydown(function(event)
+{
+	//ловим событие нажатия клавиши
+	if(event.keyCode == 13 && document.getElementById('edit')==document.activeElement) 
+	{
+		var ValData=$('#edit').val();
+		window.buf=ValData;
+		$('#edit').blur();
+	}
+});
+
+	$('.ClassDataTable').on('dblclick', 'td', function(e) 	
+	{
+		//ловим элемент, по которому кликнули
+		var t = e.target || e.srcElement;
+		//получаем название тега
+		var elm_name = t.tagName.toLowerCase();
+		//если это инпут - ничего не делаем
+		if(elm_name == 'input')	{return false;}
+		var val = $(this).html();
+		var code = '<input type="text" id="edit" value="'+val+'" />';
+		window.buf=val;
+		$(this).empty().append(code);
+		$('#edit').focus();
+		$('#edit').blur(function()	
+		{
+			$(this).parent().empty().html(window.buf);		
+		});
+	});
+
+
+
+
+</script>
+		
+		
+{% endblock%}
+

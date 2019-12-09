@@ -1,0 +1,78 @@
+#checkbox_button {
+	margin-bottom: 0px;
+}
+
+#input_password {
+	margin-bottom: 0px;
+}
+#Footer {
+	/* flex:0 0 auto;  */ /* ну не знаааю, нужно ли это */
+	text-align: center;
+	padding:10px;
+	 position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 80px;
+}
+
+#secret_word_div {
+	margin-bottom: 0px;
+	display: none;
+}
+.vcenter {
+	top: 30%;
+	float: none;
+}
+body {
+	height: 100%;
+}
+#row1{
+	height: 60%;
+	margin: 0px;
+}
+html {
+	height: 100%;
+}
+#tabSignIn {
+	/*height: 100%;*/
+}
+.tab-content {
+	/*height: 94%;*/
+}
+#tab
+{
+
+	position: relative;
+	top: 20%;
+}
+ul.nav.nav-tabs{
+	text-align: center;
+	width: 100%;
+	border-bottom: none;
+}
+ul.nav.nav-tabs>li {
+	display: inline-block;
+	float: none;
+}
+#forgot-pass {
+	border-top: 1px solid #ccc;
+	border-bottom: 0px;
+	border-left: 0px;
+	border-right: 0px;
+	margin-top: 20px;
+	font-weight: bold;
+}
+.input-group-addon.glyphicon.glyphicon-eye-close.pass_mode
+{
+	top: 0px;
+	position: relative;
+	cursor: pointer;
+}
+
+.input-group-addon.glyphicon.glyphicon-eye-open.pass_mode
+{
+	top: 0px;
+	position: relative;
+	cursor: pointer;
+}

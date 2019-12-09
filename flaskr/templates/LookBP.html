@@ -1,40 +1,46 @@
 {% extends "layout.html" %}
-{% block title %}Просмотр БП{% endblock %}
-<!--{% block navi %}<li class="active">Просмотреть БД</li>{% endblock %}-->
+{% block title %}Просмотреть БП{% endblock %}
+{% block ActiveMenuLookBP %}class="active"{% endblock %}
+
+{% block scripts %}
+	<script type="text/javascript" src="{{ url_for('static', filename='LookBP.js') }}"></script>
+{% endblock %}
 
 {% block body %}
 	<h1>Просмотр загруженной базы прецедентов</h1>
 	<br>
-	<form action="{{ url_for('ExecDataFromTable') }}" method=post>
-		<p>
-			<select name="TableChoice" onchange="this.form.submit()" class="select">
-				<option selected>Выберите базу для просмотра</option>
-				{% for i in TabList %}
-					<option value={{ i[1] }}>{{ i[1] }}</option>
-				{% endfor %}
-			</select>
-		</p>  
-	</form>
-<!--<div class="btn-group">
-  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Выберите базу для просмотра<span class="caret"></span></button>
-  <ul class="dropdown-menu" role="menu">
-  	{% for i in TabList %}
-		<option value={{ i[1] }}>{{ i[1] }}</option>
-	{% endfor %}
-  </ul>
-</div>-->
-	{% if TabData %}
-	<div class="table_scroll">
-		<table class="table table-striped">
-			{% for str in TabData %}
-				<tr>
-					{% for i in str %}
-						<td>{{ i }}</td>
-					{% endfor %}
-				</tr>
+	<p>
+		<select id="TableChoice" name="TableChoice" class="select">
+			<option selected>Выберите базу для просмотра</option>
+			{% for Tab in TabList %}
+				<option>{{ Tab }}</option>
 			{% endfor %}
-		</table>
+		</select>
+	</p>  
+
+		
+	<progress id="ProgressBar" value="0" max="100" hidden></progress>
+ 
+	<div id="TabDataDiv" hidden>
+		<h3>База прецедентов</h3>
+		<div class="table_scroll">
+			<table id="TabData" class="table table-striped table-bordered">
+				<tbody>
+				</tbody>
+			</table>
+		</div>
+	
+		<br>
+		<br>
+	
+		<h3>Таблица, содержащая описания параметров</h3>
+		<div class="table_scroll">
+			<table id="DescrTabData" class="table table-striped table-bordered">
+				<tbody>
+				</tbody>
+			</table>
+		</div>
 	</div>
-	{% endif %}
+
 
 {% endblock %}

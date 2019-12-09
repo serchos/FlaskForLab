@@ -227,3 +227,22 @@ function AddDataFromFile(filem)
 		  
 	reader.readAsText(tfile);
 }
+
+function Algorithms(AlgorithmValue)
+{
+	switch(AlgorithmValue)
+	{
+		case 'Classification':
+			$("#DivKMeans").attr("hidden", true);
+			$("#DivClassification").attr("hidden", false);
+			break;
+		case 'KMeans':
+			$("#DivKMeans").attr("hidden", false);
+			$("#DivClassification").attr("hidden", true);
+			break;
+		case 'TimurAlgorithm':
+			$("#DivKMeans").attr("hidden", true);
+			$("#DivClassification").attr("hidden", true);
+			break;
+	}
+}

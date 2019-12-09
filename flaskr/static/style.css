@@ -4,33 +4,24 @@ html,body{
 	margin-right: 5px;
 }
 
-.page-header {
-    background-color: white;
-    margin: 0px;                        /*движение заголовка по Оу*/
-    padding: 10px 10px 20px 40px;       /*границы: верхн, пр, нижн, л*/
-}
-
-.page-header h1	{
-    color: #333;
-    font-size: 40pt;
-}
+/*
 .table-striped {
 	margin-top: 10px;
 	border: 1px;
 	border-style: solid;
 	border-color: #333;
-}
+}*/
 
-.table-striped tr{
-	border: 1px;
-	border-style: solid;
-	border-color: #333;
-}
-.table-striped td{
-	border: 1px;
-	border-style: solid;
-	border-color: #333;
-}
+/* .table-striped tr{ */
+	/* border: 1px; */
+	/* border-style: solid; */
+	/* border-color: #333; */
+/* } */
+/* .table-striped td{ */
+	/* border: 1px; */
+	/* border-style: solid; */
+	/* border-color: #333; */
+/* } */
 .table_scroll  {
 	 height: 300px; overflow-y: scroll;
 }
@@ -38,76 +29,24 @@ html,body{
 	 height: auto; overflow-y: scroll;
 
 }
-.our_menu {
-	margin-left:20px;
-	margin-right:5px;
-}
-.page-header a	{
-	text-decoration: none;
-}
-.log_io	{
-	position: absolute;
-	background: white;
-	display: inline-block;
-    top: 0;
-	right: 0;
-	margin-right: 30px;
-	margin-top: 15px;
-	padding: 0em;
-}
-
-.log_io a {
-	font-size: 1.5em;
-	color: #333;
-	text-decoration: none;
-}
-
-.wrapper{
-	height:100%;
-	display:flex;
-	flex-direction:column;
-}
-.pages {
-	flex:1 0 auto;
-	padding: 1.5px 0px 0px 25px;
-}
-
-.pages h1{
-	font-size: 23pt;
-	text-align: center;
-}
-.pages1 {
-	flex:1 0 auto;
-}
-
-.rightimg  {
-    float: right; /* Выравнивание по правому краю  */ 
-    margin: 0px 80px 5px 7px; /* Отступы вокруг картинки */
-	width: 350px;
-	height: 350px;
-}
-
-.supertext {
-	padding-top: 20px;
-	width: 60%;
-	font-size: 15pt;
-}
 
 .panel.panel-default {
 	width: 98%;
 }
 
-.footfix{
-	flex:0 0 auto;
-	padding:10px;
-}
+/* .DataTableCl th, #first_tr { */
+	/* background-color: lightblue;  */
+	/* font-size: 23px; */
+/* } */
 
-.DataTableCl th, #first_tr {
-	background-color: lightblue; 
-}
+/* th { */
+	/* background-color: black;  */
+	/* color: white; */
+	/* font-size: 18px; */
+/* } */
 
 .buttons {
-	 margin-top: 5px; /* Обнуляем значение отступов */
+	 /* margin-top: 5px; /* Обнуляем значение отступов */ */
    /* padding: 4px;*/ /* Значение полей */
 }
 
@@ -140,81 +79,184 @@ html,body{
 	border: 1px;
 	border-color: #333;
 }
-/*Для лаб*/
 
-img {
-    max-width: 100%;
-	max-height: 100%;
+/* .panel-body{
+	width: 100%;
+} */
+ 
+
+.panel.LeftBlock{
+	float:left;
+	width:48%;
 }
-.Banner {
+
+.panel.RightBlock{
+	float:right;
+	width:48%;
+}
+
+.DivClearL{
+	clear:left;
+}
+
+.DivClearR{
+	clear:right;
+}
+
+/* -----Progress----- */
+
+progress[value] {
+  /* Reset the default appearance */
+  -webkit-appearance: none;
+   appearance: none;
+
+  /* width: 400px; */
+  height: 25px;
+}
+
+progress[value]::-webkit-progress-bar {
+  background-color: #eee;
+  border-radius: 2px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
+}
+
+progress[value]::-webkit-progress-value {
+  background-image:
+	   -webkit-linear-gradient(-45deg, 
+	                           transparent 33%, rgba(0, 0, 0, .1) 33%, 
+	                           rgba(0,0, 0, .1) 66%, transparent 66%),
+	   -webkit-linear-gradient(top, 
+	                           rgba(255, 255, 255, .25), 
+	                           rgba(0, 0, 0, .25)),
+	   -webkit-linear-gradient(left, #09c, #f44);
+
+    border-radius: 2px; 
+    background-size: 35px 20px, 100% 100%, 100% 100%;
+}
+
+.progress-div{
+	position: relative;
+	height: 25px;
+}
+
+.progress-div progress{
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+.progress-text{
 	position: absolute;
-    top: 50%;
-    left: 50%;
-    height: 200px;
-    width: 200px;
+	left: 0%; 
+	top: 10%; 
+	width: 100%; 
+	text-align: center;
 }
 
-.Timer{
-	height: 50px;
-	font-family: serif;
-    font-size: 20pt;
+/* ------------------ */
+
+#EditTh{
+	color: black;
+} 
+
+
+
+/* -----Layout----- */
+
+.Wrapper{
+	height:100%;
+	display:flex;
+	flex-direction:column;
 }
 
-.Timer p{
+.LayoutPageHeader {
+    background-color: white;
+    margin: 0px;                        /*движение заголовка по Оу*/
+    padding: 10px 10px 20px 40px;       /*границы: верхн, пр, нижн, л*/
+}
+
+.LayoutPageHeader h1	{
+    color: #333;
+    font-size: 40pt;
+}
+
+.LayoutPageHeader a	{
+	text-decoration: none;
+}
+
+.log_io	{
+	position: absolute;
+	background: white;
 	display: inline-block;
+    top: 0;
+	right: 0;
+	margin-right: 30px;
+	margin-top: 15px;
+	padding: 0em;
+	font-size: 1.2em;
 }
 
-.MenuUL{
-	list-style: none;
+.log_io a {
+	font-size: 1.5em;
+	color: #333;
+	text-decoration: none;
 }
 
-.MenuA{
-	/*text-decoration: none;*/
+#MainMenu {
+	margin-left:20px;
+	margin-right:5px;
 }
 
-
-
-
-
-
-
-
-
-.MenuUL1 ul {
-  display: none;
-  background-color: #f90;
-  position: absolute;
-  top: 100%;
-}
-.MenuUL1 li:hover ul { 
-	display: block; 
+.Pages {
+	flex:1 0 auto;
+	padding: 2px 0px 0px 20px;
 }
 
-.MenuUL1, .MenuUL1 ul {
-  margin: 0;
-  padding: 0;
-  list-style-type: none;
+.Pages h1{
+	font-size: 23pt;
+	text-align: center;
 }
-.MenuUL1 {
-  height: 30px;
-  background-color: #666;
-  padding-left: 25px;
-  min-width: 470px;
+
+#Footer {
+	/* flex:0 0 auto;  */ /* ну не знаааю, нужно ли это */
+	text-align: center;
+	padding:10px;
 }
-.MenuUL1 li {
-  float: left;
-  position: relative;
-  height: 100%;
+
+/* --------------- */
+
+
+
+/* -----MENU----- */
+
+.MenuFrame{
+	width: 98%;
+	display: inline-block; 
+	border: 1px solid Gainsboro;
+	border-radius: 10px;
+	padding: 10px;
 }
-.MenuUL1 li a {
-  display: block;
-  padding: 6px;
-  width: 100px;
-  color: #fff;
-  text-decoration: none;
-  text-align: center;
+
+.MenuText {
+	padding-top: 40px;
+	width: 60%;
+	font-size: 15pt;
 }
-.MenuUL1 ul li { float: none; }
-.MenuUL1 li:hover { background-color: #f90; }
-.MenuUL1 ul li:hover { background-color: #666; }
+
+.MenuRightImg  {
+    float: right; /* Выравнивание по правому краю  */ 
+    margin: 0px 80px 5px 7px; /* Отступы вокруг картинки */
+	width: 350px;
+	height: 350px;
+}
+
+#switch_res_json {
+	cursor:pointer;
+}
+/* -------------- */
+
+
+/* ------TestEditBP-----*/
+
+/*----------------------*/
 

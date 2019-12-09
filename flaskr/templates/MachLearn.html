@@ -19,7 +19,7 @@
 		$("#DivDataTable").attr("hidden", false);
     }
 </script>
-
+<big>
 	<h1>Реализация алгоритмов машинного обучения</h1>
 
 	<form action="{{ url_for('ShowTab') }}" method=post>
@@ -30,7 +30,9 @@
 				<option selected>Выберите базу прецедентов</option>
 			{% endif %}
 			{% for tab in TabList %}
-				<option>{{ tab[1] }}</option>
+				{% if tab[0].find('Description') == -1 %} <!-- было tab[1]-->
+					<option>{{ tab[0] }}</option>
+				{% endif %}
 			{% endfor %}
 		</select>
 
@@ -38,16 +40,19 @@
 	</form>
 
 	<div id="DivDataTable" class="table_scroll" {% if not TabInfo %} hidden {% endif %}>
-		<table id="DataTable" class="table table-striped DataTableCl" style="border:1px solid black; border-collapse:collapse;">
-			<tr id="first_tr" class="first_tr">
+		<table id="DataTable" class="table table-striped table-bordered DataTableCl">
+			<!-- <th id="first_tr" class="first_tr"> -->
+			<thead>
+			<tr id="first_tr">
 				{% if TabInfo %}
-					<td width="30">{{TabInfo[0][1]}} </td>
+					<th width="30">{{TabInfo[0][0]}} </td>
 					{% for str in TabInfo[1:] %}
-						<td width="140">{{ str[1] }}</td>
+						<th width="140">{{ str[0] }}</td>
 					{% endfor %}
 				{% endif %}
 			</tr>
-		
+			</thead>
+			<tbody>
 			{% for str in TabData %}
 				<tr>
 					{% for i in str %}
@@ -55,6 +60,7 @@
 					{% endfor %}
 				</tr>
 			{% endfor %}
+			</tbody>
 		</table>
 	</div>
 	<div class = "in_row_div panel-default">
@@ -73,12 +79,12 @@
 	</p>
 
 
-	<form id="MLForm" action="{{ url_for('GoMachLearn2') }}" method=post>
+	<form id="MLForm" action="{{ url_for('GoMachLearn') }}" method=post>
 		<dd>
 		<table hidden id="ClassDataTable" name="ClassDataTable" class="table table-striped ClassDataTable" style="border:1px solid black; border-collapse:collapse;" >
 			<tr id="first_tr" class="first_tr">
 				{% if TabInfo %}
-					<td width="30">{{TabInfo[0][1]}}</td>
+					<td width="30">{{TabInfo[0][0]}}</td>
 					{% for i in TabInfo[1: TabInfo|length-1] %}
 						<td width="140">{{ i[1] }}</td>
 					{% endfor %}
@@ -96,26 +102,72 @@
 		
 		<div class ="in_row_div panel panel-default">
 		<div>
-		<p>Выбор алгоритма</p>
-		<select id=Algol name='Algol' class="select">
-			<option value=KNN>Метод ближайшего соседа</option>
-		</select>
+			<p>Выбор алгоритма</p>
+			<p><select id=Algol name='ExtractionAlgorithm' class="select">
+				<option value=KNN>Метод ближайшего соседа</option>
+			</select></p>
 		</div>
 		<div>
 		<p>Выбор метрики</p>
 		<select id=Metric name='Metric' class="select">
-			<option value=MetL1>Метрика L1</option>
-			<option value=MetEuclid>Евклидова метрика</option>
-			<option value=MetCheb>Метрика Чебышева</option>
+			<option value=MetricL1>Метрика L1</option>
+			<option value=MetricEuclid>Евклидова метрика</option>
+			<option value=MetricChebyshev>Метрика Чебышева</option>
 		</select>
 		</div>
-		<div>
-		<p>Количество соседей</p>
-		<input name='NeibCount' id="NeibCount" maxlength="20" size="20" class="select">
+			<div>
+				<p>Количество соседей</p>
+				<input name='NeibCount' id="NeibCount" maxlength="20" size="20" class="select">
+			</div>
+			
+			<!-- <div> -->
+				<!-- <p><input type=checkbox checked name='WeightOn' id="WeightOn">Учитывать веса параметров</p> -->
+			<!-- </div> -->
 		</div>
+		
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<p>Кросс-валидация</p>
+				<p>Используемый метод кросс-валидации</p>
+				<p><select id=CrossValidation name='CrossValidation' class="select" onchange="CrossValidationFun(this.value)">
+					<option value=KFoldCV selected>Контроль по K блокам</option>
+					<option value=HoldOutCV>Контроль на отложенных данных</option>
+					<option value=LOOCV>Контроль по отдельным объектам</option>
+				</select></p>
+						
+				<div id=DivKFoldCV>
+					<p>Количество блоков</p>
+					<p><input name='BlockCount' maxlength="20" size="20" class="select"></p>
+				</div>
+				
+				<div id=DivHoldOutCV hidden>
+					<p>Доля обучающей выборки </p>
+					<p><input name='PercentTS' maxlength="20" size="20" class="select"></p>
+					<p>Количество итераций</p>
+					<p><input name='IterationCount' maxlength="20" size="20" class="select"></p>
+				</div>		
+						
+				<div id=DivCrossValidation>
+					<p>Выбор метрики</p>
+					<p><select id=CVMetric name='CVMetric' class="select">
+						<option value=MetricL1>Метрика L1</option>
+						<option value=MetricEuclid>Евклидова метрика</option>
+						<option value=MetricChebyshev>Метрика Чебышева</option>
+					</select></p>
+				</div>
+				
+				<div>
+				 <p><input type=checkbox checked name='WeightOn' id="WeightOn">Учитывать веса параметров</p>
+				</div>
+				<p><input name=Start type=submit value='Начать кросс-валидацию' class="btn btn-default"></p>
+			</div>
 		</div>
-		<p><input name=Start type=button value='Оптимизировать' class="btn btn-default" onclick="javascript: $('#Optimize').click();"></p>
-		<p><input name=Start type=submit value='Старт!' class="btn btn-default" onclick="javascript: RememberId(event, 'MLForm', 'ClassDataTable')"></p>
+		
+		<!-- <p><input name=Start type=submit value='Подобрать!' class="btn btn-default"></p> -->
+		
+		
+		<!-- <p><input name=Start type=button value='Оптимизировать' class="btn btn-default" onclick="javascript: $('#Optimize').click();"></p> -->
+		<p><input name=Start type=submit value='Начать классификацию' class="btn btn-default" onclick="javascript: RememberId(event, 'MLForm', 'ClassDataTable')"></p>
 
 		<p><select id="TSField" multiple name="TSField" hidden></select></p>
 		<p><select id="COField" multiple name="COField" hidden></select></p>
@@ -145,8 +197,8 @@
 			</table>
 		{% endif %}
 			
-		<p><input name=Optimize id=DelRepData type=submit value="Удалить" class="btn btn-default" onclick="javascript: SaveDeleteRep()"></p>
-		<!--<p><input name=Optimize id=Optimize type=submit value="Оптимизировать" class="btn btn-default" hidden></p>-->
+		<!-- <p><input name=Optimize id=DelRepData type=submit value="Удалить" class="btn btn-default" onclick="javascript: SaveDeleteRep()"></p> -->
+		<!-- <input name=Optimize id=Optimize type=submit value="Оптимизировать" class="btn btn-default" hidden></p> -->
 		<p><select id="RepSelect" multiple name="RepSelect" hidden></select></p>
 	</form>
 		
@@ -214,11 +266,27 @@
 		{% endif %}
 	{% endif %}
 
+	{% if AccList %}
+		<table id="DataTable" class="table table-striped DataTableCl" style="border:1px solid black; border-collapse:collapse;">
+			<tr id="first_tr" class="first_tr">
+				<td>Количество соседей</td>
+				{% for Neib in range(AccList[0], AccList[1]) %}
+					<td>{{ Neib }}</td>
+				{% endfor %}
+			</tr>
+				
+			<tr>
+				<td>Точность классификации</td>
+				{% for i in range(2, AccList|length) %}
+					<td>{{ AccList[i] }}</td>
+				{% endfor %}
+			</tr>
+		</table>
+		
+		<p>Максимальная точность классификации: {{ MaxAcc }} достигается при количестве соседей: {{ MaxNeibCount }}</p>
+	{% endif %}
 
-
-
-
-
+</big>
 
 
 

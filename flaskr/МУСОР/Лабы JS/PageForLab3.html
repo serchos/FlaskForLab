@@ -1,0 +1,59 @@
+<!doctype html>
+<head>
+	<title>Страница 3 для лабы</title>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans|PT+Serif" rel="stylesheet">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css"> 
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script> 
+	
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}"> 
+	<script type="text/javascript" src="{{ url_for('static', filename='Common.js') }}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='PageForLab3.js') }}"></script>
+</head>
+
+<body>
+<div class='wrapper'>
+		<div class="page-header">
+			<a href="{{ url_for('menu') }}">
+				<h1 style="margin:0px;">Научно-исследовательская работа</h1>
+			</a>
+		</div>
+
+		
+		
+<div class="pages">
+	<nav>
+		<ul class="MenuUL1">
+			<li><a class="MenuA" href="#">Главная</a></li>
+			<li><a class="MenuA" href="#">Работа с БП</a>
+				<ul>
+					<li><a class="MenuA" href="{{ url_for('ExpHandLoad') }}">Создать БП</a></li>
+					<li><a class="MenuA" href="{{ url_for('LookBP') }}">Просмотреть БП</a></li>
+					<li><a class="MenuA" href="{{ url_for('EditBP') }}">Редактировать БП</a></li>
+				</ul>
+			</li>
+			<li><a class="MenuA" href="{{ url_for('MachLearn') }}">Реализация алгоритмов</a></li>
+			<li><a class="MenuA" href="#">Лабораторные работы</a>
+				<ul>
+					<li><a class="MenuA" href="{{ url_for('PageForLab1') }}">Страница 1</a></li>
+					<li><a class="MenuA" href="{{ url_for('PageForLab2') }}">Страница 2</a></li>
+					<li><a class="MenuA" href="{{ url_for('PageForLab3') }}">Страница 3</a></li>
+				</ul>
+			</li>
+		</ul>
+	</nav>
+</div>
+		
+<footer class='footfix'>
+	<hr>
+		НИУ МЭИ, 2017
+</footer>
+	
+</div>
+</body>
+
+
+
+

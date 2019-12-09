@@ -1,0 +1,393 @@
+ '''
+def IsFloat(value):
+ try:
+  float(value)
+  return True
+ except ValueError:
+  return False
+ except TypeError:
+  return False
+  
+def IsInt(value):
+ try:
+  int(value, 10)
+  return True
+ except ValueError:
+  return False
+ except TypeError:
+  return False
+  
+def FindMinMax2ME(ColData):
+ n=len(ColData)
+ ME=0
+
+ for s in ColData:
+  ME+=s*(1/n)
+ 
+ return ME
+
+def FindMinMax2D(ColData, ME):
+ n=len(ColData)
+ D=0
+
+ for s in ColData:
+  D+=(1/n)*math.pow((s-ME), 2)
+
+ return D
+ 
+def FindMinMaxListME(VecData, MEList, n):
+ if MEList==[]:
+  MEList=[0 for i in VecData]
+
+ for count, s in enumerate(VecData):
+  MEList[count]+=s*(1/n)
+
+ return MEList
+ 
+def FindMinMaxListD(VecData, MEList, DList, n):
+ if DList==[]:
+  DList=[0 for i in VecData]
+
+ for count, s in enumerate(VecData):
+  DList[count]+=(1/n)*math.pow((s-MEList[count]), 2)
+
+ return DList
+
+def NoLineNormal2(ColData, ME, D):
+ ColDataNormal=[]
+ 
+ if isinstance(ME, list)==False: 
+  #try:
+   for s in ColData:
+    if D!=0:
+     ColDataNormal.append(1/(math.exp((-0.3)*((s-ME)/math.sqrt(D)))+1))
+    else:
+     ColDataNormal.append(1/(math.exp((-0.3)*(s-ME))+1))
+    #ColDataNormal.append(1/(math.exp((-0.3)*(s/Cent-1))+1))
+  #except:
+   #import sys
+   #import ipdb
+   #tb = sys.exc_info()[2]
+   #ipdb.post_mortem(tb)
+ else:
+  for i, me, d in zip(ColData, ME, D):
+   if d!=0:
+    ColDataNormal.append(1/(math.exp((-0.3)*((i-me)/math.sqrt(d)))+1))
+   else:
+    ColDataNormal.append(1/(math.exp((-0.3)*(i-me))+1))
+
+ return ColDataNormal
+'''
+
+'''
+#@app.route('/GoMachLearn2',  methods = ['GET', 'POST'])
+def GoMachLearnNew():   
+ db=get_db()
+ cur=db.execute("SELECT * FROM sqlite_master WHERE type = 'table'")
+ TabList=cur.fetchall()
+ cur=db.execute('pragma table_info({0})'.format(BPName))
+ TabInfo=cur.fetchall()
+ cur=db.execute('SELECT * FROM {0} ORDER BY id ASC'.format(BPName))
+ TabData=cur.fetchall()
+ ColNames=[s[1] for count, s in enumerate(TabInfo) if count>0]
+ #ColNames=[s[1] for s in range(1, len(TabInfo))]
+ Algol=request.form.get('Algol')
+ TSField=request.form.getlist('TSField')
+ TSData=DataExecute(TSField, BPName, ColNames)
+ RowsNumber=int(request.form['RowsNumber'], 10)
+ ColNumber=int(request.form['ColNumber'], 10)
+ NeibCount=int(request.form['NeibCount'], 10)
+ 
+ if RowsNumber!=0:
+  COData, COField=SelectDataExecute(RowsNumber, ColNumber)
+  AlgolMas={'KNN':KNNAlgol}
+  AnswerList, MinDistList, YMinDistList, MaxNeibList=AlgolMas[Algol](TSData, COData)
+  return render_template('MachLearn.html', TabData=TabData, TabList=TabList, TabInfo=TabInfo,
+  COData=zip(COField, COData, AnswerList, MaxNeibList), NeibCount=NeibCount, NumPar=4, BPName=BPName)
+ else:
+  COField=request.form.getlist('COField')
+  COData=DataExecute(COField, BPName, ColNames)
+  RealAnswerList=DataExecute(COField, BPName, [ColNames[len(ColNames)-1]])
+  AlgolMas={'KNN':KNNAlgol}
+  AnswerList, MinDistList, YMinDistList, MaxNeibList=AlgolMas[Algol](TSData, COData)
+  CountCorAns=0
+  for i, j in zip(RealAnswerList, AnswerList):
+   if i[0]==j:
+    CountCorAns+=1
+  Accuracy=round((CountCorAns/len(AnswerList))*100, 2)
+
+  return render_template('MachLearn.html', TabData=TabData, TabList=TabList, TabInfo=TabInfo,
+  COData=zip(COField, COData, RealAnswerList, AnswerList, MaxNeibList), NeibCount=NeibCount, Accuracy=Accuracy, NumPar=5, BPName=BPName)
+'''
+
+'''
+#@app.route('/GoMachLearn2',  methods = ['GET', 'POST'])
+def GoMachLearnNew():   
+ db=get_db()
+ cur=db.execute("SELECT * FROM sqlite_master WHERE type = 'table'")
+ TabList=cur.fetchall()
+ cur=db.execute('pragma table_info({0})'.format(BPName))
+ TabInfo=cur.fetchall()
+ cur=db.execute('SELECT * FROM {0} ORDER BY id ASC'.format(BPName))
+ TabData=cur.fetchall()
+ ColNames=[s[1] for count, s in enumerate(TabInfo) if count>0]
+ #ColNames=[s[1] for s in range(1, len(TabInfo))]
+ Algol=request.form.get('Algol')
+ TSField=request.form.getlist('TSField')
+ TSData=DataExecute(TSField, BPName, ColNames)
+ RowsNumber=int(request.form['RowsNumber'], 10)
+ ColNumber=int(request.form['ColNumber'], 10)
+ NeibCount=int(request.form['NeibCount'], 10)
+ 
+ if RowsNumber!=0:
+  COData, COField=SelectDataExecute(RowsNumber, ColNumber)
+  AlgolMas={'KNN':KNNAlgol}
+  AnswerList, MinDistList, YMinDistList, MaxNeibList=AlgolMas[Algol](TSData, COData)
+  return render_template('MachLearn.html', TabData=TabData, TabList=TabList, TabInfo=TabInfo,
+  COData=zip(COField, COData, AnswerList, MaxNeibList), NeibCount=NeibCount, NumPar=4, BPName=BPName)
+ else:
+  COField=request.form.getlist('COField')
+  COData=DataExecute(COField, BPName, ColNames)
+  RealAnswerList=DataExecute(COField, BPName, [ColNames[len(ColNames)-1]])
+  AlgolMas={'KNN':KNNAlgol}
+  AnswerList, MinDistList, YMinDistList, MaxNeibList=AlgolMas[Algol](TSData, COData)
+  CountCorAns=0
+  for i, j in zip(RealAnswerList, AnswerList):
+   if i[0]==j:
+    CountCorAns+=1
+  Accuracy=round((CountCorAns/len(AnswerList))*100, 2)
+
+  return render_template('MachLearn.html', TabData=TabData, TabList=TabList, TabInfo=TabInfo,
+  COData=zip(COField, COData, RealAnswerList, AnswerList, MaxNeibList), NeibCount=NeibCount, Accuracy=Accuracy, NumPar=5, BPName=BPName)
+'''
+
+'''
+def KMeans(TabData, ClusterCount, Metric, PrimCent): 
+ TabDataNormal, UnKeysMat, MEMat, DMat, Y=PrepareForKNN(TabData, len(TabData[0]))
+ TabDataNormal=list(zip(*TabDataNormal))
+ mu=PrimaryCenter(TabDataNormal, Y, ClusterCount, Metric, PrimCent)
+ TotalDist1, TotalDist2=-1, -1
+
+ while True:
+  ClusterList=CreateClusterList(TabDataNormal, mu, Metric)
+  if TotalDist1==-1:
+   TotalDist1=TotalDistance(ClusterList, mu)
+  
+  mu=[]
+
+  for Cluster in ClusterList:
+   center=CenterOfMass(Cluster)
+   mu.append(center)
+  
+  TotalDist2=TotalDistance(ClusterList, mu)
+  
+  if TotalDist2>=TotalDist1:
+   break
+  else:
+   TotalDist1=TotalDist2
+
+ mu=CloseToCenterOfMass(ClusterList, mu, Metric)
+ ClearTabData(TabDataNormal, mu)
+
+def PrimaryCenter(TabDataNormal, Y, ClusterCount, Metric, PrimCent):
+ Center={'Forgy': Forgy(TabDataNormal, ClusterCount, Metric), 
+		 'RandomPartitioning': RandomPartitioning(TabDataNormal, ClusterCount), 
+		 'AnswerPartitioning': AnswerPartitioning(TabDataNormal, Y, ClusterCount)
+		}
+ return Center[PrimCent]
+ 
+def Forgy(TabDataNormal, ClusterCount, Metric):
+ rmu, mu, r=[], [], 0
+ 
+ for i in range(0, ClusterCount):
+  flag=True
+  while flag==True:
+   r=random.randint(0, len(TabDataNormal)-1)
+   flag=False
+   for rmuel in rmu:
+    if r==rmuel:
+     flag=True
+     break
+  rmu.append(r)
+  
+ for i in rmu:
+  mu.append(TabDataNormal[i])
+ 
+ EmptyCluster=True
+  
+ while EmptyCluster==True:
+  EmptyCluster=False
+  ClusterList=CreateClusterList(TabDataNormal, mu, Metric)
+  
+  for i, Cluster in enumerate(ClusterList):
+   if Cluster==[]:
+    EmptyCluster, flag=True, True
+    while flag==True:
+     r=random.randint(0, len(TabDataNormal)-1)
+     flag=False
+     for rmuel in rmu:
+      if r==rmuel:
+       flag=True
+       break
+    rmu[i]=r
+    mu[i]=TabDataNormal[r]
+ return mu
+
+def Forgy2(TabDataNormal, ClusterCount, Metric):
+ EmptyCluster, mu=True, []
+
+ while EmptyCluster==True:
+  rmu, mu, r=[], [], 0
+  EmptyCluster=False 
+  for i in range(0, ClusterCount):
+   flag=True
+   while flag==True:
+    r=random.randint(0, len(TabDataNormal)-1)
+    flag=False
+    for rmuel in rmu:
+     if r==rmuel:
+      flag=True
+      break
+   rmu.append(r)
+  
+  for i in rmu:
+   mu.append(TabDataNormal[i])
+  
+  ClusterList=CreateClusterList(TabDataNormal, mu, Metric)
+  
+  for Cluster in ClusterList:
+   if Cluster==[]:
+    EmptyCluster=True
+    break
+
+ return mu
+   
+   
+def CreateClusterList(TabDataNormal, mu, Metric):
+ ClusterList=[[] for i in mu]
+
+ for i, stri in enumerate(TabDataNormal):
+  mindist, minmu=0, 0
+  
+  for j, strj in enumerate(mu):
+   dist=globals()[Metric](stri, strj)
+   #dist=MetEuclid(stri, strj)
+   if (mindist==0 and dist!=0) or (dist<mindist and dist!=0):
+    mindist=dist
+    minmu=j
+  
+   ClusterList[minmu].append(stri)
+ return ClusterList
+ 
+def CenterOfMass(Cluster):
+ sum=[0 for i in Cluster[0]]
+
+ for Str in Cluster:
+  for i, x in enumerate(Str):
+   sum[i]=sum[i]+x
+	
+ ClusterLen=len(Cluster)
+  
+ for i in range(0, len(sum)):#check without range only for
+  sum[i]=sum[i]/ClusterLen
+ return sum
+ 
+def TotalDistance(ClusterList, mu):
+ TotalDistance=0
+ for Cluster, muel in zip(ClusterList, mu):
+  for Str in Cluster:
+   buf=[]
+   for s, m in zip(Str, muel):
+    buf.append(s-m)
+   for x in buf:
+    TotalDistance=TotalDistance+x*x
+ return TotalDistance
+ 
+def CloseToCenterOfMass(ClusterList, mu, Metric):
+ newmu=[]
+ 
+ for Cluster in ClusterList:
+  mindist, minmu=-1, 0
+  for Str, muel in zip(enumerate(Cluster), mu):
+   dist=globals()[Metric](Str[1], muel)
+   #dist=MetEuclid(Str[1], muel)
+   if mindist==-1 or dist<mindist:
+    mindist=dist
+    minmu=Str[0]
+  newmu.append(Cluster[minmu])
+ return newmu
+ 
+def ClearTabData(TabDataNormal, mu):
+ db=get_db()
+
+ for i, Str in enumerate(TabDataNormal):
+  flag=False
+  for muel in mu:
+   if Str==muel:
+    flag=True
+    break
+  if flag==False:
+   db.execute('DELETE FROM {0} WHERE id={1}'.format(BPName, TabData[i][0]))
+   
+def RandomPartitioning(TabDataNormal, ClusterCount):
+ ClusterList=[[] for i in range(0, ClusterCount)]
+ EmptyCluster=True
+
+ while EmptyCluster==True:
+  for Str in TabDataNormal:
+   r=random.randint(0, ClusterCount-1)
+   ClusterList[r].append(Str)
+  
+  EmptyCluster=False
+  for Cluster in ClusterList:
+   if Cluster==[]:
+    EmptyCluster=True
+    ClusterList=[[] for i in range(0, ClusterCount)]
+    break
+ 
+ mu=[]
+ 
+ for Cluster in ClusterList:
+  mu.append(CenterOfMass(Cluster))
+
+ return mu
+
+def AnswerPartitioning(TabDataNormal, Y, ClusterCount):
+ ClusterList=[[] for i in range(0, ClusterCount)]
+ d={}
+ 
+ for y in Y:
+  if d.get(y)==None:
+   d[y]=len(d)
+  
+ if len(d)==ClusterCount:
+  
+  for Str, y in zip(TabDataNormal, Y):
+   ClusterList[d.get(y)].append(Str)
+   
+ elif len(d)<ClusterCount:
+ 
+  for Str, y in zip(TabDataNormal, Y):
+   ClusterList[d.get(y)].append(Str)
+  
+  for i, j in zip(range(len(d), ClusterCount), range(0, ClusterCount-len(d))):
+    for k in range(0, math.floor(len(ClusterList[j])/2)):
+     Str=ClusterList[j].pop()
+     ClusterList[i].append(Str)
+ 
+ elif len(d)>ClusterCount: 
+  for Str, y in zip(TabDataNormal, Y):
+   i=d.get(y)
+   if i>=ClusterCount:
+    r=random.randint(0, ClusterCount-1)
+    ClusterList[r].append(Str)
+   else:
+    ClusterList[i].append(Str)
+
+ mu=[]
+ 
+ for Cluster in ClusterList:
+  mu.append(CenterOfMass(Cluster))
+ 
+ return mu
+'''

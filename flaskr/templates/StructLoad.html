@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+{% block title %}Создание структурированной БП{% endblock %}
+
+{% block scripts %}
+	<script type="text/javascript" src="{{ url_for('static', filename='StructLoad.js') }}"></script>
+{% endblock %}
+{% block body %}
+
+	<h1>Создание структурированной библиотеки прецедентов</h1>
+	</br>
+	<form action="{{ url_for('CreateStructBP') }}" method=post enctype=multipart/form-data>
+	<div class="row col-md-12">
+	<div id = "success_message" class="alert alert-success" role="alert" hidden> 
+		<strong>Структура JSON запомнена успешно</strong>
+	</div>
+	<div id = "alert_message" class="alert alert-danger" role="alert" hidden> 
+		<strong>Ошибка создания БП.</strong> Необходимо корректно заполнить все выделенные поля.
+	</div>
+	<div class="col-md-offset-4 col-md-4">
+		<input name="bp_name" type="text" class="form-control" placeholder="Имя создаваемой БП" id="bp_name"/>
+	</div>
+	<div hidden><input name="ColCount" type="text" class="form-control" placeholder="" id="ColCount"/></div>
+			
+	<br />
+	<br />
+	<br />
+		<div class="input-group col-md-offset-2 col-md-8">
+			<input type="text" class="form-control" placeholder="Задать JSON структуру Case" id="json_case_template">
+			<span class="input-group-btn">
+			<button type="button" id="case_button" class="btn btn-primary">Запомнить структуру Case</button>
+			</span>
+		</div>
+	<br />
+		<div class="input-group col-md-offset-2 col-md-8" id="res_div">
+			<input type="text" class="form-control" placeholder="Задать JSON структуру Result" id="json_res_template">
+			<span class="input-group-btn">
+			<button type="button" id="result_button" class="btn btn-primary">Запомнить структуру Result</button>
+			</span>
+		</div>
+		<div class="input-group col-md-offset-5 col-md-2" id="select_div">
+			<!-- <span class="input-group-btn"> -->
+				<select id='Types' class= "form-control" name='ColType'>
+					<option disabled selected>Выберите тип для Result</option>
+					<option value="INT">Целый</option> 
+					<option value="DOUBLE">Вещественный</option> 
+					<option value="VARCHAR(255)">Текст</option> 
+		
+		</select>
+		
+		<!-- </span> -->
+		</div>
+<br />
+	<div class="table_scroll">
+		<table id="TabData" class="table table-striped table-bordered">
+			<thead>
+			<tr>
+				<th class="col-md-1"><b>Id</b></th>
+				<th class="col-md-6"><b>Case</b></th>
+				<th class="col-md-4">
+				<b>Result</b>
+				<label class="checkbox-inline pull-right">
+				<input type="checkbox" id="switch_res_json" name="switch_res_json">JSON</label>
+				</th>
+				<th class="col-md-1">
+					<button type="button" id="add_prec" class="btn btn-success">Добавить прецедент</button>
+				</th>
+			</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+	</div>
+	<br/>
+		<input type="submit" id='CreateJSONBP' Name='CreateJSONBP' class="btn btn-success col-md-4 col-md-offset-4" value='Создать структурированную БП' onclick='BPValidate(event)'/>
+	</div>
+	</form>
+
+{% endblock%}

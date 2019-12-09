@@ -143,4 +143,23 @@ function SaveDeleteRep()
 			$("#RepSelect").append("<option selected value={0}>{0}</option>".format($("#RepDataTable tr:eq({0}) td:first".format(i)).html()));	
 }
 
+function CrossValidationFun(AlgorithmValue)
+{
+	switch(AlgorithmValue)
+	{
+		case 'KFoldCV':
+			$("#DivKFoldCV").attr("hidden", false);
+			$("#DivHoldOutCV").attr("hidden", true);
+			break;
+		case 'HoldOutCV':
+			$("#DivKFoldCV").attr("hidden", true);
+			$("#DivHoldOutCV").attr("hidden", false);
+			break;
+		case 'LOOCV':
+			$("#DivKFoldCV").attr("hidden", true);
+			$("#DivHoldOutCV").attr("hidden", true);
+			break;
+	}
+}
+
 

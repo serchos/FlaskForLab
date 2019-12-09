@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8"/>
+
+	<link rel="stylesheet" href='registration.css' />
+	<script src="https://code.jquery.com/jquery-latest.js"></script>
+	<script type="text/javascript" src="main_window.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> 
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script type="text/javascript" src="registration.js"></script>
+	<title>Authorization</title>
+</head>
+<body>
+	<div id="tab">
+		<ul class="nav nav-tabs">
+			<li class="active"><a href="#tabSignIn" data-toggle="tab">Sign In</a></li>
+			<li><a href="#tabSignUp" data-toggle="tab">Sign Up</a></li>
+		</ul>
+		<div class="tab-content">
+
+			<div class="tab-pane active fade in active" id="tabSignIn">
+				<div id="row1" class="row col-md-12 col-sm-12 col-xs-12 col-12">
+					<div class="col-md-offset-3 col-sm-offset-3 col-xs-offset-3 col-offset-3 col-md-6 col-sm-6 col-xs-6 col-6">
+						<form>
+							<fieldset>
+								<div class="form-group col-md-offset-2 col-sm-offset-2 col-xs-offset-2 col-offset-2 col-md-8 col-sm-8 col-xs-8 col-8">
+									<label for="inputLogin" class="control-label col-md-12 col-sm-12 col-xs-12 col-12">Login</label>
+									<input type="login" class="form-control" id="inputLogin" placeholder="Login">
+								</div>
+								<div id = "input_password" class="form-group col-offset-2 col-xs-offset-2 col-md-offset-2 col-sm-offset-2 col-md-8 col-sm-8 col-xs-8 col-8">
+									<label for="inputPassword" class="control-label col-md-12 col-sm-12 col-xs-12 col-12">Password</label>
+									<!-- <input type="password" class="form-control" id="inputPassword" placeholder="Password"> -->
+									<div class="input-group">	
+									 	<input type="password" class="form-control" id="inputPassword" placeholder="Password">
+									 	<span class="input-group-addon glyphicon glyphicon-eye-close pass_mode"></span>
+									</div>
+								</div>
+								<div class="form-group col-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2 col-md-8 col-sm-8 col-xs-8 col-8">
+									<div class="col-md-12 col-sm-12 col-xs-12 col-12">
+										<div id = "checkbox_button" class="checkbox ">
+											<label><input type="checkbox">Remember</label>
+										</div>
+									</div>
+								</div>
+								<div class="form-group">
+									<div class="col-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2 col-md-8 col-sm-8 col-xs-8 col-8">
+										<button type="submit" class="center-block btn btn-primary col-md-12 col-sm-12 col-xs-12 col-12">Sign in</button>
+									</div>
+								</div>
+								<div class="form-group col-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2 col-md-8 col-sm-8 col-xs-8 col-8">
+ 									<button type="submit" class="btn btn-default col-md-12 col-sm-12 col-xs-12 col-12" id="forgot-pass">Forgot Password</button>
+ 								</div>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+			
+			<div class="tab-pane fade" id="tabSignUp">
+				<div id="row1" class="row col-md-12 col-sm-12 col-xs-12 col-12">
+					<div class="col-md-offset-3 col-sm-offset-3 col-xs-offset-3 col-offset-3 col-md-6 col-sm-6 col-xs-6 col-6">
+						<form>
+							<fieldset>
+								<div class="form-group col-md-offset-2 col-sm-offset-2 col-xs-offset-2 col-offset-2 col-md-8 col-sm-8 col-xs-8 col-8">
+									<label for="inputLogin" class="control-label col-md-12 col-sm-12 col-xs-12 col-12">Login</label>
+									<input type="login" class="form-control" id="inputLogin" placeholder="Login">
+								</div>
+								<div id = "input_password_2" class="form-group col-offset-2 col-xs-offset-2 col-md-offset-2 col-sm-offset-2 col-md-8 col-sm-8 col-xs-8 col-8">
+									<label for="inputPassword2" class="control-label col-md-12 col-sm-12 col-xs-12 col-12">Password</label>
+									<div class="input-group">	
+									 	<input type="password" class="form-control" id="inputPassword2" placeholder="Password">
+									 	<span class="input-group-addon glyphicon glyphicon-eye-close pass_mode"></span>
+									</div>
+								</div>
+
+								<div id = "confirm_password" class="form-group col-offset-2 col-xs-offset-2 col-md-offset-2 col-sm-offset-2 col-md-8 col-sm-8 col-xs-8 col-8">
+									<label for="confirmPassword" class="control-label col-md-12 col-sm-12 col-xs-12 col-12">Confirm password</label>
+									<!-- <input type="confirm password" class="form-control" id="confirmPassword" placeholder="Confirm password"> -->
+									<div class="input-group">	
+									 	<input type="password" class="form-control" id="confirmPassword" placeholder="Password">
+									 	<span class="input-group-addon glyphicon glyphicon-eye-close pass_mode"></span>
+									</div>
+								</div>
+
+								<div id = "secret_word" class="form-group col-offset-2 col-xs-offset-2 col-md-offset-2 col-sm-offset-2 col-md-8 col-sm-8 col-xs-8 col-8">
+									<label for="secretWord" class="control-label col-md-12 col-sm-12 col-xs-12 col-12">Secret Word</label>
+									<div class="input-group">	
+									 	<input type="password" class="form-control" id="secretWord" placeholder="Secret Word">
+									 	<span class="input-group-addon glyphicon glyphicon-eye-close pass_mode"></span>
+									</div>
+								</div>
+								<div class="form-group">
+									<div class="col-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2 col-md-8 col-sm-8 col-xs-8 col-8">
+										<button type="submit" class="center-block btn btn-primary col-md-12 col-sm-12 col-xs-12 col-12">Sign Up</button>
+									</div>
+								</div>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

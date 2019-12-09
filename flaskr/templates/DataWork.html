@@ -40,7 +40,55 @@
 					<input name=DataEdit type=submit value="Отменить изменения" class="btn btn-default">
 					<input name=DataEdit type=button value="Экспериментальное добавление столбца" class="btn btn-default" onclick="AddColumn2()">
 				</div>
+				
 				<br>
+				<br>
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<p>Модуль повышения эффективности</p>
+						
+						<p>Используемый алгоритм</p>
+						<p> <select id=Algorithm name='ImpEffAlgorithm' class="select" onchange="Algorithms(this.value)">
+							<option value=Classification selected>Алгоритм классификации</option>
+							<option value=KMeans>Алгоритм k-средних</option>
+							<option value=TimurAlgorithm>Алгоритм Тимура</option>
+						</select></p>
+						
+						<div id=DivClassification>
+							<p >Степень сходства</p>
+							<p style="display:inline-block;"><input name='Similarity' maxlength="20" size="20" class="select"></p>
+						
+							<p style="position:relative; display:inline-block; left:50px; top:-38px">Выбор метрики</p>
+							<p style="position:relative; display:inline-block;left:-56px; top:0px;"><select id=Metric name='Metric' class="select">
+								<option value=MetricL1>Метрика L1</option>
+								<option value=MetricEuclid>Евклидова метрика</option>
+								<option value=MetricChebyshev>Метрика Чебышева</option>
+							</select></p>
+						</div>
+						
+						<div id=DivKMeans hidden>
+							<p>Количество кластеров</p>
+							<p style="display:inline-block;"><input name='ClusterCount' maxlength="20" size="20" class="select"></p>
+						
+							<p style="position:relative; display:inline-block; left:50px; top:-38px">Алгоритм нахождения начальных центров кластеризации</p>
+							<p style="position:relative; display:inline-block; left:-338px; top:0px;"><select id=PrimaryCenter name='PrimaryCenter' class="select">
+								<option value=Forgy>Метод Forgy</option>
+								<option value=RandomPartitioning>Метод случайного разделения (Random Partitioning)</option>
+								<option value=AnswerPartitioning>Метод ответного разделения</option>
+							</select></p>
+						
+							<p style="position:relative; display:inline-block; left:-150px; top:-38px">Выбор метрики</p>
+							<p style="position:relative; display:inline-block; left:-258px; top: 0px"><select id=Metric name='Metric' class="select">
+								<option value=MetricL1>Метрика L1</option>
+								<option value=MetricEuclid>Евклидова метрика</option>
+								<option value=MetricChebyshev>Метрика Чебышева</option>
+							</select></p>
+						</div>
+						
+						<p><input name=DataEdit type=submit value="Повысить эффективность" class="btn btn-default"></p>
+					</div>
+				</div>
+				
 				<br>
 				<br>
 				<p><input type=file name="BPFile" id="BPFile" class="btn btn-default" style="margin-bottom:7px;" onchange="AddDataFromFile(this)">Загрузить данные из файла</p>
@@ -56,6 +104,32 @@
 	 
 		</dl>
 	</form>
+	
+	<br/>
+	<br/>
+	{% if TabDescrData %}
+	<div id="second_h3"><h3>Таблица, содержащая описания параметров</h3></div>
+	<div class="table_scroll">
+			<table class="table table-striped table-bordered" style="border:1px solid black; border-collapse:collapse; margin:auto">
+				<tr id="first_tr_look" class="first_tr_look">
+					{% for str in DescriptionTabInfo %}
+						{% if str[1]=='id' %}
+							<td width="30">{{ str[1] }}</td>
+						{% else %}
+							<td width="140">{{ str[1] }}</td>
+						{% endif %}
+					{% endfor %}
+				</tr>
 
+				{% for str in TabDescrData %}
+					<tr>
+						{% for i in str%}
+							<td>{{ i }}</td>
+						{% endfor %}
+					</tr>
+				{% endfor %}
+			</table>
+	</div>
+	{% endif %}
 
 {% endblock %}

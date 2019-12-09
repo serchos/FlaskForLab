@@ -8,15 +8,20 @@
 {% block body %}
 	<h1>Экспериментальное создание базы прецедентов</h1>
 	<br>
+	<!-- див с сообщением об ошибках -->
+	<div id = "mistake_message" class="alert alert-danger" role="alert" style="width: 800px" hidden> 
+		<strong>Ошибка!</strong> Для создания базы прецедентов, заполните все поля, подсвеченные красным.
+	</div>
 	<form action="{{ url_for('AcceptAndCreateScheme') }}" method=post enctype=multipart/form-data>
-		<p>Укажите имя будущей базы прецедентов:<input name=BPName id="BPName" maxlength="20" size="20" style="margin-left: 5px;"></p>
-		<p>Введите число столбцов:<input name="ColCount" id="ColCount" type="number" maxlength="10" size="10" style="margin-left: 5px;"></p>
+		<p>Укажите имя будущей базы прецедентов:<input name=BPName id="BPName" maxlength="20" size="20" style="margin-left: 5px;" data-toggle="tooltip" data-placement="right" title="Для создания БП необходимо ввести её имя"></p>
+		<p>Введите число параметров:<input name="ColCount" id="ColCount" type="number" maxlength="10" size="10" style="margin-left: 5px;"></p>
 		<p>
-			<input name=Create type=button class="btn btn-default" value='Создать столбцы' onclick="javascript: AddColumns()">
-			<input name=Create type=button class="btn btn-default" value='Добавить столбец в конец' onclick="javascript: AddToEnd()">
-			<input name=Create type=button class="btn btn-default" value='Удалить столбец с конца' onclick="javascript: DelFromEnd()">
-			<input name=Create type=button class="btn btn-default" value='Добавить столбец в указанное место' onclick="javascript: AddChoice()">
-			<input name=Create type=button class="btn btn-default" value='Удалить выбранный столбец' onclick="javascript: DelChoice()">
+			<input name=Create type=button class="btn btn-default" value='Создать параметры' onclick="javascript: AddColumns()">
+			<input name=Create type=button class="btn btn-default" value='Добавить параметр в конец' onclick="javascript: AddToEnd()">
+			<input name=Create type=button class="btn btn-default" value='Удалить параметр с конца' onclick="javascript: DelFromEnd()">
+			<input name=Create type=button class="btn btn-default" value='Добавить параметр в указанное место' onclick="javascript: AddChoice()">
+			<input name=Create type=button class="btn btn-default" value='Удалить выбранный параметр' onclick="javascript: DelChoice()">
+			<!-- <input name=Create type=button class="btn btn-default" value='тест' onclick="javascript: testfunction()"> -->
 			<input name=Create type=button class="btn btn-default" value='Снять все выделенные объекты' onclick="javascript: RemoveMark()">
 		</p>
 		
@@ -28,7 +33,7 @@
 					<input type=radio name="ChangeAllTypes1" value="2" onchange="javascript: ChangeAllTypes(this.value)" style="margin-left:15px">Все типы "текст"
 					<input type=radio name="ChangeAllTypes1" value="3" onchange="javascript: ChangeAllTypes(this.value)" style="margin-left:15px">Все типы "другой"
 				</p>
-				<p><input type=checkbox onchange="javascript: CustomNames(this)">Программные имена столбцов</p>  
+				<p><input type=checkbox onchange="javascript: CustomNames(this)">Программные имена параметров</p>  
 			</div>
 		</div>
 		
@@ -36,20 +41,63 @@
 			<div class="panel-body">
 				<p>Создать БП по файлу</p>
 				<p><input type="file" name="BPFile" id="BPFile" onchange="CreateSchemeFromFile(this)" style="margin-bottom:5px">Создать схему  БП по файлу</p>
-				<p><input type=checkbox checked name="CopyDataToBP">Скопировать данные из файла в БП</p> 
-				<p><input type=checkbox checked id="IdInFile" name="IdInFile">В файле есть колонка ID</p>
+				<!-- <p><input type="file" name="BPFile" id="BPFile" onchange="GetRangesFromFile(this)" style="margin-bottom:5px">Создать схему  БП по файлу</p> -->
+				<p><input type=checkbox checked name="CopyDataToBP" id="CopyDataToBP">Скопировать данные из файла в БП</p> 
+				<p><input type=checkbox id="IdInFile" name="IdInFile">В файле есть колонка ID</p>
 			</div>
 		</div>
  
-		<table class="NewBP table table-bordered" id="Scheme"></table>
+		<table class="NewBP table table-bordered" id="Scheme" hidden = "hidden"> 
+		<!-- <tr id = "param_name"> -->
+		<tr>
+			<td><b>Параметр *</b></td>
+		</tr>
+		<!-- <tr id = "param_type"> -->
+		<tr>
+			<td><b>Тип *</b></td>
+		</tr>
+		<tr>
+			<td><b>От (Диапазон)*</b></td>
+		</tr>
+		<tr>
+			<td><b>До (Диапазон)*</b></td>
+		</tr>
+		<!-- <tr id = "param_descript"> -->
+		<tr>
+			<td><b>Описание</b></td>
+		</tr>
+		<!-- <tr id = "param_unit"> -->
+		<tr>
+			<td><b>Единицы измерения</b></td>
+		</tr>
+		<tr>
+			<td><b>Вес</b></td>
+		</tr>
+		</table>
 		<p><input type=submit id='Accept' hidden value='Создать таблицу и загрузить данные' onclick='FormValidate(event)'></p>
 	</form> 
 
 	<select id=Types name='ColType' hidden>
-		<option>Целый</option>
-		<option>Вещественный</option>
-		<option>Текст</option>
-		<option>Другой</option>
+		<option value="INT">Целый</option> 
+		<option value="DOUBLE">Вещественный</option> 
+		<option value="VARCHAR(255)">Текст</option> 
+		<option value="VARCHAR(255)">Другой</option> 
 	</select>
-  
+	
+	<select id=Units name='ColUnit' hidden>
+		<option>м</option>
+		<option>кг</option>
+		<option>с</option>
+		<option>А</option>
+		<option>Гц</option>
+		<option>А</option>
+		<option selected></option>
+	</select>
+	
+	<!-- Селект для весов -->
+	<select id=Weights name='ColWeights' hidden>
+	</select>
+  <div id = "hidden_info" hidden>
+	<p> * - обязательное свойство для параметра прецедента </p>
+  </div>
 {% endblock%}

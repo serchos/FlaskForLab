@@ -1,0 +1,117 @@
+html,body{
+	height:100%;
+}
+
+.page-header {
+    background-color: #008B8B;
+    margin: 0px;                        /*движение заголовка по Оу*/
+    padding: 10px 10px 20px 40px;       /*границы: верхн, пр, нижн, л*/
+}
+
+.page-header h1	{
+	font-family: serif;
+    color: #F0F8FF;
+    font-size: 40pt;
+}
+
+.table_scroll  {
+	 height: 300px; overflow-y: scroll;
+}
+.table_scroll_2  {
+	 height: auto; overflow-y: scroll;
+
+}
+.page-header a	{
+	text-decoration: none;
+}
+.log_io	{
+	position: absolute;
+	background: #008B8B;
+	display: inline-block;
+    top: 0;
+	right: 0;
+	margin-right: 30px;
+	margin-top: 15px;
+	padding: 0em;
+}
+
+.log_io a {
+	font-size: 1.5em;
+	color: white;
+	text-decoration: none;
+	font-family: 'PT Serif', serif;
+}
+
+.wrapper{
+	height:100%;
+	display:flex;
+	flex-direction:column;
+}
+.pages {
+	flex:1 0 auto;
+	padding: 1.5px 0px 0px 25px;
+}
+
+.pages h1{
+	font-size: 23pt;
+	font-family: 'PT Serif', serif;
+	text-align: center;
+}
+.pages1 {
+	flex:1 0 auto;
+}
+
+.rightimg  {
+    float: right; /* Выравнивание по правому краю  */ 
+    margin: 0px 80px 5px 7px; /* Отступы вокруг картинки */
+	width: 350px;
+	height: 350px;
+}
+
+.supertext {
+	padding-top: 20px;
+	padding-left: 20px;
+	width: 60%;
+	font-size: 15pt;
+}
+
+.panel.panel-default {
+	margin-left: 1%;
+	width: 98%;
+}
+
+.footfix{
+	flex:0 0 auto;
+	padding:10px;
+}
+
+.DataTableCl th, #first_tr {
+	background-color: lightblue; 
+}
+
+.buttons {
+	 margin-top: 5px; /* Обнуляем значение отступов */
+   /* padding: 4px;*/ /* Значение полей */
+}
+
+ .buttons li {
+    display: inline; /* Отображать как строчный элемент */
+    margin-right: 5px; /* Отступ слева */
+}
+  
+.select {
+   position:relative;
+   font-size: 18px;
+   color: #008080;
+   border: 5px solid #AFEEEE;  	
+   border-style:ridge;
+   border-radius: 5px;
+   margin-bottom:5px;
+}   
+
+.BannerForm{
+left: 300px; 
+width: 30px;
+height: 50px;
+
+}

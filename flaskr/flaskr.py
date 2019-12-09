@@ -1,23 +1,57 @@
-import sqlite3, os, io, math, re
+import sqlite3, os, io, math, re, random
 import Vectorization
 import urllib.request
+import json
+import cgi
+import tempfile
+#import MySQLdb
+#from flask_mysqldb import MySQL
 
-from flask import Flask, request, session, g, redirect, url_for, abort, \
-     render_template, flash
+from flask import Flask, request, session, g, escape, redirect, url_for, abort, \
+     render_template, flash, make_response, send_file
 from werkzeug.utils import secure_filename
+from Metrics import MetricL1, MetricEuclid, MetricChebyshev
+from ImprovingEfficiencyAlgorithms import KMeans2, Classification2, TimurAlgorithm2
+from ExtractionAlgorithms import KNNAlgorithm
+from CrossValidation import KFoldCV, HoldOutCV, Shuffle
+from flaskext.mysql import MySQL
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager # для логина также необходимо сделать pip install flask-login
+from hashlib import md5
+#from flask_login import current_user, login_user
+#from app.models import User
 
+'''
 DEBUG = True
 SECRET_KEY = 'development key'
 USERNAME = 'admin'
 PASSWORD = 'default'
+'''
+DEBUG = True
+app = Flask(__name__)  
+
+app.config['MYSQL_DATABASE_USER'] = 'root'
+app.config['MYSQL_DATABASE_PASSWORD'] = '975310'
+app.config['MYSQL_DATABASE_DB'] = 'table_storage'
+app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+app.config['SECRET_KEY']='development key'
+app.config.from_envvar('FLASKR_SETTINGS', silent=True)
+
+mysql = MySQL(app)
+mysql.init_app(app) 
+
+# login = LoginManager(app) # для логина
 
 ALLOWED_EXTENSIONS = set(['txt', 'csv'])
 
-app = Flask(__name__)
-TabListGl=[]
-TabInfo=[]
-TabData=[]
+global BPName
+global TabData
+global TabInfo
 
+TabListGl=[]
+TabInfo, TabData=[], []
+
+'''
 app.config.update(dict(
     DATABASE=os.path.join(app.root_path, 'files'),
     DEBUG=True,
@@ -25,12 +59,32 @@ app.config.update(dict(
     USERNAME='admin',
     PASSWORD='default',
 ))
-app.config.from_envvar('FLASKR_SETTINGS', silent=True)
+'''
+#conn = mysql.connect()
+#users
+def set_password(password_hash, password):
+ password_hash = generate_password_hash(password)
+
+def check_password(password_hash, password):
+ return check_password_hash(password_hash, password)
+def get_db(): 
+ if not hasattr(g, 'conn'):
+  g.conn = connect_db()
+ return g.conn
+
+
 
 def connect_db():
- rv = sqlite3.connect(os.path.join(app.root_path+'\\files', 'flaskrflaskr.db'))
- rv.row_factory = sqlite3.Row
- return rv
+ conn = mysql.connect()
+ return conn
+@app.teardown_appcontext 
+def close_db(error):
+ if hasattr(g, 'conn'):
+  g.conn.close()
+
+if __name__ == '__main__': 
+ app.run()
+	
 	
 def init_db(SchName): #!!!!!!!!!!!
  with app.app_context():
@@ -38,47 +92,113 @@ def init_db(SchName): #!!!!!!!!!!!
   with app.open_resource(SchName, mode='r') as f:
    db.cursor().executescript(f.read())
   db.commit()
-	
-if __name__ == '__main__':
-    app.run()
 
-	
-def get_db():
- if not hasattr(g, 'sqlite_db'):
-  g.sqlite_db = connect_db()
- return g.sqlite_db
-	
-@app.teardown_appcontext
-def close_db(error):
-    if hasattr(g, 'sqlite_db'):
-        g.sqlite_db.close()
-	
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+    # error = None
+    # if request.method == 'POST':
+        # if request.form['username'] != app.config['USERNAME']:
+            # error = 'Invalid username'
+        # elif request.form['password'] != app.config['PASSWORD']:
+            # error = 'Invalid password'
+        # else:
+            # session['logged_in'] = True
+            # flash('You were logged in')
+            ## directory=os.walk(app.root_path+'/files',followlinks=False)
+            ## return render_template('show_entries.html', directory=directory)
+            # return redirect(url_for('show_entries'))
+    # return render_template('login.html', error=error)
+
+class ServerError(Exception):pass
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    error = None
-    if request.method == 'POST':
-        if request.form['username'] != app.config['USERNAME']:
-            error = 'Invalid username'
-        elif request.form['password'] != app.config['PASSWORD']:
-            error = 'Invalid password'
-        else:
-            session['logged_in'] = True
-            flash('You were logged in')
-            #directory=os.walk(app.root_path+'/files',followlinks=False)
-            #return render_template('show_entries.html', directory=directory)
-            return redirect(url_for('show_entries'))
-    return render_template('login.html', error=error)
+ return render_template('login.html')
+@app.route('/loginRequest', methods=['POST'])
+def loginRequest():
+ conn=get_db()
+ cur = conn.cursor()
+ user_name = request.values.get('login')
+ user_pass = request.values.get('pass')
+ secret_word = request.values.get('secretWord')
+ print(len(secret_word))
+ if 'username' in session:
+  return redirect(url_for('MainPage'))
+ error = None
+ try:
+  cur.execute('SELECT COUNT(1) FROM users WHERE user_name = \'{}\';'.format(user_name))
+  if not cur.fetchone()[0]:
+   abort(404)
+  if len(secret_word) == 0:
+   cur.execute('SELECT user_pass FROM users WHERE user_name = \'{}\' limit 1;'.format(user_name))
+   print('golubi letyat2')
+   hash_pass = cur.fetchone()[0]
+   print(hash_pass)
+   user_pass_b = user_pass.encode('utf-8')
+   if md5(user_pass_b).hexdigest() == hash_pass:
+    #session['logged_in'] = True
+    session['username'] = user_name
+    return redirect(url_for('MainPage'))
+   abort(404)
+  else:
+   cur.execute('SELECT user_secret_word FROM users WHERE user_name = \'{}\' limit 1;'.format(user_name))
+   secret_word_from_query = cur.fetchall()[0]
+   if secret_word_from_query == secret_word:
+    session['username'] = user_name
+    #session['logged_in'] = True
+    return redirect(url_for('MainPage'))
+   abort(404)  
+ except:
+  abort(404)
+ return 'OK'
 
+@app.route('/registration', methods=['POST'])
+def registration():
+ conn=get_db()
+ cur = conn.cursor()
+ user_name = request.values.get('login')
+ user_pass = request.values.get('pass')
+ secret_word = request.values.get('secretWord')
+ try:
+  if len(user_name) > 32:
+   abort(404)
+  cur.execute("SELECT COUNT(1) FROM users WHERE user_name = \'{}\';".format(user_name))
+  
+  if cur.fetchone()[0]:
+   #raise ServerError('Имя пользователя уже занято')
+   abort(404)
+  user_pass_b = user_pass.encode('utf-8') # perevodim v bayts
+  password_form_hash = md5(user_pass_b).hexdigest()
+  print(password_form_hash)
+  print('INSERT INTO users SET user_name = \'{0}\', user_pass = \'{1}\', user_rights = \'user\', user_secret_word=\'{2}\';'.format(user_name,password_form_hash,secret_word))
+  cur.execute('INSERT INTO users SET user_name = \'{0}\', user_pass = \'{1}\', user_rights = \'user\', user_secret_word=\'{2}\';'.format(user_name,password_form_hash,secret_word))
+  conn.commit()
+  return redirect(url_for('login'))
+ except:
+  abort(404)
+ return 'OK'
 
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('MainPage'))
+
+	
+@app.route('/StructLoad', methods=['GET', 'POST'])
+def StructLoad():
+ return render_template('StructLoad.html')
+
+ 
 @app.route('/ExpHandLoad', methods=['GET', 'POST'])
 def ExpHandLoad():
  return render_template('ExpHandLoad.html')
 
-
+ 
 @app.route('/MachLearn', methods=['GET', 'POST'])
 def MachLearn():
- db=get_db()
- cur=db.execute("SELECT * FROM sqlite_master WHERE type = 'table'")
+ conn=get_db()
+ cur = conn.cursor()
+ cur.execute("SELECT table_name FROM information_schema.tables where table_schema='table_storage'\
+				                             and table_name NOT LIKE '%Description' and table_name NOT LIKE 'users'")
  TabList=cur.fetchall()
  return render_template('MachLearn.html', TabList=TabList)
 
@@ -87,70 +207,336 @@ def MachLearn():
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
- 		
-		
-@app.route('/PageForLab1')
-def PageForLab1():
- return render_template('PageForLab1.html')	
- 
-@app.route('/PageForLab2')
-def PageForLab2():
- return render_template('PageForLab2.html')	
- 
-@app.route('/PageForLab3')
-def PageForLab3():
- return render_template('PageForLab3.html')	
-		
-@app.route('/')
-def menu():
- return render_template('menu.html')
 	
+# @app.route('/')
+# def MainPage():
+ # return render_template('MainPage.html')
+
+#новая для представления
+@app.route('/')
+def MainPage():
+ if 'username' not in session:
+  return redirect(url_for('login'))
+ 
+ print(session)
+ username_session = escape(session['username']).capitalize()
+ print(username_session)
+ return render_template('MainPage.html', session_user_name=username_session)
+	
+#переделал
 @app.route('/LookBP',  methods = ['GET', 'POST'])
 def LookBP():
- db = get_db()
- cur=db.execute("SELECT * FROM sqlite_master WHERE type = 'table'")
- TabList=cur.fetchall()
- 
- #cur = db.execute('select * from entries order by id desc')
- #entries = cur.fetchall()
+ #cur = get_db()
+ conn = get_db()
+ cur = conn.cursor()
+ cur.execute("SELECT table_name FROM information_schema.tables where table_schema='table_storage'\
+				                             and table_name NOT LIKE '%Description' and table_name NOT LIKE 'users'")
+ TabList=[Tab[0] for Tab in cur.fetchall()]
  return render_template('LookBP.html', TabList=TabList)
+
+ #переделал
+@app.route('/EditBP',  methods = ['GET', 'POST'])
+def EditBP():
+ conn = get_db()
+ cur = conn.cursor()
+ cur.execute("SELECT table_name FROM information_schema.tables where table_schema='table_storage'\
+				                             and table_name NOT LIKE '%Description'")
+ TabList=[Tab[0] for Tab in cur.fetchall()]
+ return render_template('EditBP.html', TabList=TabList)
+	
+# @app.route('/LookBP',  methods = ['GET', 'POST'])
+# def LookBP():
+ # db = get_db()
+ # cur=db.execute("SELECT * FROM sqlite_master WHERE type = 'table'")
+ # TabList=cur.fetchall()
+ 
+ # buf=[row for row in TabList[0]]
+ 
+ # flash(TabList)
+ # return render_template('LookBP.html', TabList=TabList)
+#----------------------------
+ #edit
+@app.route('/MachLearn1',  methods = ['GET', 'POST'])
+def CreateStructBP():
+ StrNames = ''
+ ColType=''
+ Buf='' #буфер для json case
+ Buf2='' #буфер для json result
+ BPName=request.form['bp_name'] + 'JSON'
+ ColCount=int(request.form['ColCount'], 10)
+ conn = get_db()
+ cur = conn.cursor()
+ print(BPName)
+ print(ColCount)
+ if request.form.get('switch_res_json')=='on':
+  cur.execute('CREATE TABLE {0} (id integer primary key AUTO_INCREMENT, Prec json, Result json)'.format(BPName))
+  for i in range(0,ColCount):
+   Buf = '\'{}\''.format(request.form['caseName' + str(i)])
+   Buf2 = '\'{}\''.format(request.form['resultName' + str(i)])
+   cur.execute("INSERT INTO {0} (Prec, Result) VALUES ({1}, {2})".format(BPName,str(Buf),str(Buf2)))
+ else:
+  ColType = request.form['ColType']
+  print(ColType)
+  cur.execute('CREATE TABLE {0} (id integer primary key AUTO_INCREMENT, Prec json, Result {1})'.format(BPName, ColType))
+  for i in range(0,ColCount):
+   Buf = '\'{}\''.format(request.form['caseName' + str(i)])
+   Buf2 = request.form['resultName' + str(i)]
+   if ColType == 'VARCHAR(255)':
+    Buf2 = '\'{}\''.format(Buf2)
+   print("INSERT INTO {0} (Prec, Result) VALUES ({1}, {2})".format(BPName,str(Buf),str(Buf2)))
+   cur.execute("INSERT INTO {0} (Prec, Result) VALUES ({1}, {2})".format(BPName,str(Buf),Buf2))
+ cur.close()
+ conn.commit()
+ conn1 = get_db()
+ cur_1 = conn1.cursor()
+ cur_1.execute("SELECT table_name FROM information_schema.tables where table_schema='table_storage'\
+				                             and table_name NOT LIKE '%Description' and table_name NOT LIKE 'users'")
+ TabList=cur_1.fetchall()
+ return render_template('MachLearn.html', TabList=TabList)
+@app.route('/LookBPRequest',  methods = ['GET'])
+def LookBPRequest():
+ conn = get_db()
+ cur = conn.cursor()
+ BPName=request.args.get('TableChoice')
+ Id=int(request.args.get('Id'), 10)
+ if (Id==-1):
+  cur.execute("SELECT COUNT(*) FROM {0}".format(BPName))
+  TotalCount=cur.fetchone()[0]
+  #print(TotalCount)
+  to_json={'TotalCount':TotalCount}
+ else:
+  CountStr=int(request.args.get('CountStr'), 10)
+  cur.execute("SELECT COUNT(*) FROM {0} WHERE id>={1} AND id<{2}".format(BPName, Id, (Id+CountStr)))
+  CurCount=cur.fetchone()[0]
+  cur.execute("SELECT * FROM {0} WHERE id>={1} AND id<{2}".format(BPName, Id, (Id+CountStr)))
+  TabData=cur.fetchall()
+  to_json={'Id':Id, 'CurCount':CurCount, 'TabData':TabData}
+  if (Id==0):
+   cur.execute('DESCRIBE {0}'.format(BPName))
+   TabInfo=cur.fetchall()
+   cur.execute('DESCRIBE {0}'.format(BPName+'Description'))
+   DescrTabInfo=cur.fetchall()
+   cur.execute("SELECT * FROM {0}".format(BPName+'Description'))
+   DescrTabData=cur.fetchall()
+   #print(DescrTabData)
+   to_json={'Id':Id, 'CurCount':CurCount, 'TabData':TabData, 'TabInfo':TabInfo, 'DescrTabData':DescrTabData, 'DescrTabInfo':DescrTabInfo}
+ return json.dumps(to_json)
+ 
+@app.route('/DeleteBP',  methods = ['POST'])
+def DeleteBP():
+ conn = get_db()
+ cur = conn.cursor()
+ BPChoice=json.loads(request.values.get('BPChoice'))
+ for BPName in BPChoice.values():
+  cur.execute("DROP TABLE {0}".format(BPName))
+  cur.execute("DROP TABLE {0}".format(BPName + 'Description'))
+ 
+ conn.commit()
+ return 'OK'
+ #все редактирование ?
+@app.route('/EditBPRequest',  methods = ['POST'])
+def EditBPRequest():
+ conn = get_db()
+ cur = conn.cursor()
+ BPName=request.values.get('TableChoice')
+ cur.execute('DESCRIBE {0}'.format(BPName))
+ TabInfo=cur.fetchall()
+ buf_types= []
+ #dlya strok
+ for tabinf in TabInfo[1:]:
+  buf_types.append(tabinf[1])
+ Operation=request.values.get('Operation')
+ 
+ if (Operation=='Delete'):
+  Data=json.loads(request.values.get('JsonObj'))
+  for Id in Data:
+   cur.execute('DELETE FROM {0} WHERE id={1}'.format(BPName, Id))
+  to_json={'Status': 'OK!'}
+ elif Operation=='DeleteAll':
+  cur.execute('DELETE FROM {0}'.format(BPName))
+  to_json={'Status': 'OK!'}
+ elif Operation=='Insert':
+  CountStr=int(request.values.get('Count'), 10)
+  RowId=[]
+  for i in range(0, CountStr):
+   cur.execute('INSERT INTO {0} () VALUES()'.format(BPName))
+   cur.execute('SELECT last_insert_id()')
+   RowId.append(cur.fetchone()[0])
+  to_json={'LastInsertRowId': RowId}  
+ elif Operation=='Update':
+  Data=json.loads(request.values.get('JsonObj'))
+  cur.execute('UPDATE {0} SET {1}="{2}" WHERE id={3}'.format(BPName, Data['ColName'], Data['Value'], Data['Id']))
+  to_json={'Status': 'OK!'}
+ elif Operation=='RenameColumn':
+  Data=json.loads(request.values.get('JsonObj'))
+  #db.execute('ALTER TABLE {0} RENAME COLUMN {1} TO {2}'.format(BPName, Data['ColName'], Data['Value']))
+  to_json={'Status': 'OK!'}
+ elif Operation=='Load From File':
+  file=request.files['ImportBPFile']
+  LastId=-1
+  cur.execute("SELECT COUNT(*) FROM {0}".format(BPName))
+  TotalCountBeforeInsert=cur.fetchone()[0]
+  for line in file:
+   line=re.sub("[\n\r]", "", line.decode('UTF-8'))
+   data=re.split("[(,\s)(;\s),;\s]", line)
+   #Buf=','.join('?' for d in data)
+   Buf=''
+   for j,data_type in enumerate(data):
+    if buf_types[j] == 'varchar(255)':
+     Buf += '\'{}\', '.format(data_type)
+    else:
+     Buf += '{}, '.format(data_type)
+   Buf = Buf[0:len(Buf)-2]    
+   #Buf=','.join(d for d in data)
+   #cur.execute('INSERT INTO {0} VALUES(null, {1})'.format(BPName, Buf), data)
+   #print(Buf)
+   #print('INSERT INTO {0} VALUES(null, {1})'.format(BPName, Buf))
+   cur.execute('INSERT INTO {0} VALUES(null, {1})'.format(BPName, Buf))
+   if LastId==-1:
+    #cur.execute("SELECT LAST_INSERT_ROWID()")
+    cur.execute("SELECT last_insert_id()")
+    LastId=cur.fetchone()[0]
+  
+  cur.execute("SELECT COUNT(*) FROM {0}".format(BPName))
+  TotalCountAfterInsert=cur.fetchone()[0]
+  #print(TotalCountBeforeInsert)
+  #print(TotalCountAfterInsert)
+  #print(LastId)
+  to_json={'TCBI': TotalCountBeforeInsert, 'TCAI': TotalCountAfterInsert, 'LastId': LastId}
+
+ conn.commit()
+ return json.dumps(to_json)
+# mysql +
+@app.route('/ExportToFile',  methods = ['POST'])
+def ExportToFile(): 
+ conn = get_db()
+ cur = conn.cursor()
+ BPName=request.form['HiddenTableChoice']
+ tfile=tempfile.TemporaryFile()
+ FileName=BPName
+ #print(request.form['ExportToFile']) 
+
+ if request.form['ExportToFile']=='Экспорт БП': 
+  cur.execute("SELECT COUNT(*) FROM {0}".format(BPName))
+  TotalCount, Id, CountStr=cur.fetchone()[0], 1, 5000
+
+  while (Id<=TotalCount):
+   cur.execute("SELECT * FROM {0} WHERE id>={1} AND id<{2}".format(BPName, Id, (Id+CountStr)))
+   TabData=cur.fetchall()
+  
+   for Str in TabData:
+    buf=','.join(str(Col) for Col in Str)+'\n'
+    tfile.write(buf.encode("utf-8"))
+ 
+   Id+=CountStr
+
+ elif request.form['ExportToFile']=='Экспорт тестовой выборки':
+  TestSample=request.form['HiddenTestSample']
+  cur.execute('SELECT * FROM {0} WHERE id IN ({1})'.format(BPName, TestSample))
+  TabData=cur.fetchall()
+  
+  for Str in TabData:
+   buf=','.join(str(Col) for Col in Str)+'\n'
+   tfile.write(buf.encode("utf-8"))
+   
+  FileName+='TestSample'
+  
+ elif request.form['ExportToFile']=='Экспорт обучающей выборки':
+  TestSample=request.form['HiddenTestSample']
+  cur.execute("SELECT COUNT(*) FROM {0}".format(BPName))
+  TotalCount, Id, CountStr=cur.fetchone()[0], 1, 5000
+ 
+  while (Id<=TotalCount):
+   cur.execute("SELECT * FROM {0} WHERE id>={1} AND id<{2} AND id NOT IN ({3})".format(BPName, Id, (Id+CountStr), TestSample))
+   TabData=cur.fetchall()
+  
+   for Str in TabData:
+    buf=','.join(str(Col) for Col in Str)+'\n'
+    tfile.write(buf.encode("utf-8"))
+ 
+   Id+=CountStr
+   
+  FileName+='TrainSample'
+ 
+ tfile.seek(0)
+ return send_file(tfile, attachment_filename="{0}.csv".format(FileName), as_attachment=True, mimetype='text/csv')
+
+ # исправил майsql +
+@app.route('/RenameBP',  methods = ['POST'])
+def RenameBP(): 
+ conn = get_db()
+ cur = conn.cursor()
+ cur.execute("SELECT table_name FROM information_schema.tables where table_schema='table_storage'\
+				                             and table_name NOT LIKE '%Description' and table_name NOT LIKE 'users'")
+ OldBPNames=[BP[0] for BP in cur.fetchall()]
+ NewBPNames=json.loads(request.values.get('NewBPNames'))
+ for OldBPName, key in zip(OldBPNames,  range(0, len(NewBPNames))):
+  try:
+   cur.execute('ALTER TABLE {0} RENAME TO {1}'.format(OldBPName, NewBPNames.get(str(key))))
+   cur.execute('ALTER TABLE {0}Description RENAME TO {1}Description'.format(OldBPName, NewBPNames.get(str(key))))
+  except mysql.OperationalError:
+   pass
+
+ return 'OK'
+ 
+ #----------------------------------------------------
  
 @app.route('/LookBP1',  methods = ['GET', 'POST'])
-def ExecDataFromTable():
+def ExecDataFromTable(): #показать содержимое таблички
  BPName=request.form['TableChoice']
+ flash('SELECT * FROM {0}'.format(BPName))
  db=get_db()
  cur=db.execute("SELECT * FROM sqlite_master WHERE type = 'table'")
  TabList=cur.fetchall()
  cur=db.execute('SELECT * FROM {0}'.format(BPName))
  TabData=cur.fetchall()
- return render_template('LookBP.html', TabList=TabList, TabData=TabData)
+ cur=db.execute('pragma table_info({0})'.format(BPName))
+ TabInfo=cur.fetchall()
+ for i in TabList:
+  if i[1] == BPName + 'Description':
+   cur2 = db.execute('SELECT * FROM {0}'.format(BPName+'Description'))
+   TabDescrData = cur2.fetchall()
+   cur2=db.execute('pragma table_info({0})'.format(BPName+'Description'))
+   DescriptionTabInfo=cur2.fetchall()
+   return render_template('LookBP.html', TabList=TabList, TabData=TabData, TabDescrData=TabDescrData, TabInfo = TabInfo, DescriptionTabInfo=DescriptionTabInfo )
+ return render_template('LookBP.html', TabList=TabList, TabData=TabData, TabInfo = TabInfo)
 
-@app.route('/EditBP',  methods = ['GET', 'POST'])
-def EditBP():
- db = get_db()
- cur=db.execute("SELECT * FROM sqlite_master WHERE type = 'table'")
- TabList=cur.fetchall()
- return render_template('EditBP.html', TabList=TabList)
+# @app.route('/EditBP',  methods = ['GET', 'POST'])
+# def EditBP():
+ # db = get_db()
+ # cur=db.execute("SELECT * FROM sqlite_master WHERE type = 'table'")
+ # TabList=cur.fetchall()
+ # return render_template('EditBP.html', TabList=TabList)
 
 @app.route('/TabEdit',  methods = ['GET', 'POST'])
 def TabEdit():
  db=get_db()
  BPName=request.form['TableChoice']
+ cur=db.execute("SELECT * FROM sqlite_master WHERE type = 'table'")
+ TabList=cur.fetchall()
  if request.form['TabEdit']=='Удалить':
   db.execute('DROP TABLE {0}'.format(BPName))
+  for i in TabList:
+   if i[1] == BPName + 'Description':
+    db.execute('DROP TABLE {0}'.format(BPName + 'Description'))
  elif request.form['TabEdit']=='Переименовать':
   NewBPName=request.form['NewBPName']
   db.execute('ALTER TABLE {0} RENAME TO {1}'.format(BPName, NewBPName))
   
  elif request.form['TabEdit']=='Работа с данными':
-  global BPName
-  global TabData
-  global TabInfo
   BPName=request.form['TableChoice']
   cur=db.execute('SELECT * FROM {0} ORDER BY id ASC'.format(BPName))
   TabData=cur.fetchall()
   cur=db.execute('pragma table_info({0})'.format(BPName))
   TabInfo=cur.fetchall()
+  for i in TabList:
+   if i[1] == BPName + 'Description':
+    cur2 = db.execute('SELECT * FROM {0}'.format(BPName+'Description'))
+    TabDescrData = cur2.fetchall()
+    cur2=db.execute('pragma table_info({0})'.format(BPName+'Description'))
+    DescriptionTabInfo=cur2.fetchall()
+    return render_template('DataWork.html', TabData=TabData, TabDescrData=TabDescrData, 
+	TabInfo = TabInfo, DescriptionTabInfo=DescriptionTabInfo )
   return render_template('DataWork.html', TabData=TabData, TabInfo=TabInfo)
 
  db.commit()
@@ -161,7 +547,8 @@ def TabEdit():
 
 @app.route('/DataWork',  methods = ['GET', 'POST'])
 def DataWork():
- db=get_db()
+ conn = get_db()
+ db = conn.cursor()
  global TabInfo
  global TabData
 
@@ -170,9 +557,9 @@ def DataWork():
   NewColType=request.form['NewColType']
   db.execute('ALTER TABLE {0} ADD COLUMN {1} {2}'.format(BPName, NewColName, NewColType))
   db.commit()
-  cur=db.execute('pragma table_info({0})'.format(BPName))
+  db.execute('DESCRIBE table_info({0})'.format(BPName))
   TabInfo=cur.fetchall()
-  cur=db.execute('SELECT * FROM {0}'.format(BPName))
+  db.execute('SELECT * FROM {0}'.format(BPName))
   TabData=cur.fetchall()
 
  elif request.form['DataEdit']=='Сохранить изменения':#look this shit
@@ -191,16 +578,18 @@ def DataWork():
    db.execute('ALTER TABLE {0} ADD COLUMN {1} {2}'.format(BPName, NewColName, NewColType))
   
   db.commit()
-  cur=db.execute('pragma table_info({0})'.format(BPName))
+  db.execute('DESCRIBE table_info({0})'.format(BPName))
   TabInfo=cur.fetchall()
 
   #Insert Strings In BP
   if len(AddStr)!=0:
-   StrNames=','.join(s[1] for s in TabInfo)
+   StrNames=','.join(s[1] for s in TabInfo if s[1]!='id')
    StrParam=','.join('null' for s in range(0, len(TabInfo)-1))
 
+   #print(StrNames)
+   #print(StrParam)
    for id in AddStr:
-    StrParam=str(id)+','+StrParam
+    #StrParam=str(id)+','+StrParam
     db.execute('INSERT INTO {0} ({1}) VALUES ({2})'.format(BPName, StrNames, StrParam))
 
   #Update Strings In BP  
@@ -219,147 +608,169 @@ def DataWork():
  elif request.form['DataEdit']=='Отменить изменения':#Make this on JavaScript
   cur=db.execute('SELECT * FROM {0}'.format(BPName))
   TabData=cur.fetchall()
+ 
+ elif request.form['DataEdit']=='Повысить эффективность':
+  ImprovingEfficiency()
+  cur=db.execute('SELECT * FROM {0} ORDER BY id ASC'.format(BPName))
+  TabData=cur.fetchall()
+  flash(len(TabData))
+  cur=db.execute('pragma table_info({0})'.format(BPName))
+  TabInfo=cur.fetchall()
 
  return render_template('DataWork.html', TabInfo=TabInfo, TabData=TabData)
 
 @app.route('/InputBP',  methods = ['GET', 'POST'])
-def AcceptAndCreateScheme():
- ColCount=int(request.form['ColCount'], 10)
- global BPName
- global TabData
- global TabInfo
+def AcceptAndCreateScheme(): # создание таблицы в бп
+ ColCount=int(request.form['ColCount'], 10) # преобразовать в int в десятичной системе
+ global BPName, TabInfo, TabData
+ global DescriptionBPName, DescriptionTabInfo, TabDescrData
  BPName=request.form['BPName']
- StrNames=''
- db=get_db()
+ DescriptionBPName = BPName + 'Description'
+ StrNames = ''
+ StrDescNames = ''
+ StrParamNames = ''
+ StrDescriptions = ''
+ StrTypes = ''
+ StrRangeFrom = ''
+ StrRangeTo = ''
+ StrWeights = ''
+ StrUnits = ''
+ Description_Str_Names = ''
+ conn = get_db()
+ cur = conn.cursor()
+ # flash(ColCount)
+ # return render_template('ExpHandLoad.html')
+ for i in range(0,ColCount):
+  StrNames = StrNames+', '+request.form['ColName'+str(i)]+' '+request.form['ColType'+str(i)] # str - переводит строку в id
+ Description_Str_Names = ', '+ 'Параметр' + ' ' + 'text' + ', ' + 'Описание' + ' ' + 'text' + ', '+ 'Тип' + ' ' + 'text' + ', ' + 'Единицы_измерения' + ' ' + 'text' + ', ' + 'Диапазон_от' + ' ' + 'real' + ', ' + 'Диапазон_до' + ' ' + 'real' + ', ' + 'Вес' + ' ' + 'real'
+ for i in range(0,ColCount-1):
+  StrParamNames = StrParamNames + ', ' + request.form['ColName' + str(i)]
+  StrDescriptions = StrDescriptions + ', ' + request.form['DescriptionName'+str(i)]
+  StrTypes = StrTypes + ', ' + request.form['ColType' + str(i)]
+  StrUnits = StrUnits + ', ' + request.form['ColUnit' + str(i)] #todo
+  StrRangeFrom = StrRangeFrom + ', ' + request.form['RangeFrom' + str(i)]
+  StrRangeTo = StrRangeTo + ', ' + request.form['RangeTo' + str(i)]
+  StrWeights = StrWeights + ', ' + request.form['ColWeights' + str(i)]
+ StrDescNames = 'Параметр' + ', ' + 'Описание' + ', ' + 'Тип' + ', ' + 'Единицы_измерения' + ', ' + 'Диапазон_от' + ', ' + 'Диапазон_до' + ', ' + 'Вес'
  
- for i in range(ColCount):
-  StrNames=StrNames+', '+request.form['ColName'+str(i)]+' '+request.form['ColType'+str(i)]
-
- db.execute('CREATE TABLE {0} (id integer primary key autoincrement{1})'.format(BPName, StrNames))
- cur=db.execute('pragma table_info({0})'.format(BPName))
- TabInfo=cur.fetchall()
-
+ #print(StrNames)
+  #Description_Str_Names = ', ' + request.form['ColName'+str(i)] + ' ' + request.form['ColType' + str(i)] + ' ' + request.form['ColWeights' +str(i)] + ' ' + request.form['RangeFrom' + str(i)] + ' ' + request.form['RangeTo' + str(i)] + ' ' + request.form['ColUnit' + str(i)]+ ' ' + request.form['DescriptionName' + str(i)] 
+ cur.execute('CREATE TABLE {0} (id integer primary key AUTO_INCREMENT{1})'.format(BPName, StrNames))
+ cur.execute('CREATE TABLE {0} (id integer primary key AUTO_INCREMENT{1})'.format(DescriptionBPName, Description_Str_Names))
+ cur.close()
+ 
+ conn1 = get_db()
+ cur_1 = conn1.cursor()
+ conn2 = get_db()
+ cur_2 = conn2.cursor()
+ cur_1.execute('DESCRIBE {0}'.format(BPName))
+ cur_2.execute('DESCRIBE {0}'.format(DescriptionBPName))
+ TabInfo = cur_1.fetchall()
+ DescriptionTabInfo = cur_2.fetchall()
  if request.form.get('BPFile')!='' and request.form.get('CopyDataToBP')=='on':
   TextFile=io.TextIOWrapper(request.files['BPFile'])
   CopyDataToBP(BPName, TextFile, TabInfo, request.files['BPFile'])
+ #cur_2.execute("SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '{0}'".format(DescriptionBPName)) #типы столбцов
+ cur_2.execute("show columns from {0}".format(DescriptionBPName))
+ descr_values = [Row[1] for Row in cur_2.fetchall()]
+ print(descr_values)
+ #print(COLUMN_NAME)
+ #print(showtab)
+# print("------------------------------------------------------")
 
- cur=db.execute('SELECT * FROM {0} ORDER BY id ASC'.format(BPName))
- TabData=cur.fetchall()
-
- return render_template('DataWork.html', TabData=TabData, TabInfo=TabInfo)#Look at this shit
+ CopyDataToDescriptionTable(DescriptionBPName, StrDescNames, StrParamNames, StrDescriptions, StrTypes, StrUnits, StrRangeFrom, StrRangeTo, StrWeights, ColCount, descr_values)
+ cur_1.execute('SELECT * FROM {0} ORDER BY id ASC'.format(BPName))
+ cur_2.execute('SELECT * FROM {0} ORDER BY id ASC'.format(DescriptionBPName))
+ TabData=cur_1.fetchall()
+ TabDescrData = cur_2.fetchall()
+ return render_template('DataWork.html', TabData=TabData, TabInfo=TabInfo, TabDescrData=TabDescrData, DescriptionTabInfo=DescriptionTabInfo) # TabDescrData=TabDescrData, DescriptionTabInfo=DescriptionTabInfo
  
-def CopyDataToBP(BPName, TextFile, TabInfo, LOL):
+def CopyDataToDescriptionTable(DescriptionBPName, StrDescNames ,StrParamNames, StrDescriptions, StrTypes, StrUnits, StrRangeFrom, StrRangeTo, StrWeights, ColCount, DescrTabInfTypes):
+ #cur=get_db()
+ conn=get_db()
+ cur=conn.cursor()
+ ParamNames_mas = StrParamNames[2:].split(', ')
+ Descriptions_mas = StrDescriptions[2:].split(', ')
+ Types_mas = StrTypes[2:].split(', ')
+ Units_mas = StrUnits[2:].split(', ')
+ RangeFrom_mas = StrRangeFrom[2:].split(', ')
+ RangeTo_mas = StrRangeTo[2:].split(', ')
+ Weights_mas = StrWeights[2:].split(', ')
+ # flash(StrDescNames)
+ for i in range(0,ColCount-1):
+  mas_param = ParamNames_mas[i] + ', ' + Descriptions_mas[i]+ ', ' + Types_mas[i]+', ' + Units_mas[i]+', ' + RangeFrom_mas[i]+', ' + RangeTo_mas[i]+', ' + Weights_mas[i]
+  mas_param_spl = mas_param.split(', ')
+  DescrTabInfTypesNew = DescrTabInfTypes[1:]
+  print(DescrTabInfTypesNew)
+  Buf=''
+  #print(DescrTabInfTypesNew)
+  #print(mas_param_spl)
+  for j in range(0,len(mas_param_spl)-1):
+   if DescrTabInfTypesNew[j] == 'text':
+    Buf += "\'{}\', ".format(mas_param_spl[j])
+   else:
+    Buf += '{}, ' .format(mas_param_spl[j])
+  Buf += mas_param_spl[len(mas_param_spl)-1]
+  # flash(mas_param)
+  print('INSERT INTO {0} ({1}) VALUES ({2})'.format(DescriptionBPName, StrDescNames, Buf))
+  cur.execute('INSERT INTO {0} ({1}) VALUES ({2})'.format(DescriptionBPName, StrDescNames, Buf))
+ #db.commit()
+ conn.commit()
+ return
+ 
+def CopyDataToBP(BPName, TextFile, TabInfo, LOL): #если данные в таблице взяли из файла
  TextStr=TextFile.readlines()
  StrNames=''
- db=get_db()
+ conn = get_db()
+ db = conn.cursor()
+ buf_types= []
 
+ #dlya strok
+ for tabinf in TabInfo[1:]:
+  buf_types.append(tabinf[1])
+ 
  if (request.form.get('IdInFile')=='on'):
-  StrNames=','.join(Str[1] for Str in TabInfo)
+  StrNames=','.join(Str[0] for Str in TabInfo)
  else:
-  StrNames=','.join(Str[1] for Str in TabInfo[1:])
-
+  StrNames=','.join(Str[0] for Str in TabInfo[1:]) #начиная с 1 элемента
  for Str in TextStr:
+ #for i,Str in enumerate(TextStr):
   StrParam= re.split("[,; ]+", Str)
-  Buf=', '.join('?' for s in StrParam)
-  db.execute('INSERT INTO {0} ({1}) VALUES ({2})'.format(BPName, StrNames, Buf), StrParam)
+  #Buf=', '.join('?' for s in StrParam)
+  Buf=''
+  for j,str_type in enumerate(StrParam):
+   if buf_types[j] == 'varchar(255)':
+    Buf += '\'{}\', '.format(str_type)
+   else:
+    Buf += '{}, '.format(str_type)
+  Buf = Buf[0:len(Buf)-2]  
+  #Buf=', '.join(s for s in StrParam)
+  #print(Buf)
+  #print('INSERT INTO {0} ({1}) VALUES ({2})'.format(BPName, StrNames, Buf))
+  db.execute('INSERT INTO {0} ({1}) VALUES ({2})'.format(BPName, StrNames, Buf))
   #list(filter(None, re.split("[,; ]+", Str))) #if there is no empty params
-
- db.commit()
+ conn.commit()
  return 
+##################################################################
 
 @app.route('/ShowTab',  methods = ['GET', 'POST'])
 def ShowTab():
- db=get_db()
+ conn=get_db()
+ cur = conn.cursor()
  global BPName
  BPName=request.form['TabList']
- cur=db.execute('SELECT * FROM {0} ORDER BY id ASC'.format(BPName))
+ cur.execute('SELECT * FROM {0} ORDER BY id ASC'.format(BPName))
  TabData=cur.fetchall()
- cur=db.execute("SELECT * FROM sqlite_master WHERE type = 'table'")
+ #print(TabData)
+ cur.execute("SELECT table_name FROM information_schema.tables where table_schema='table_storage'\
+				                             and table_name NOT LIKE '%Description' and table_name NOT LIKE 'users'")
  TabList=cur.fetchall()
- cur=db.execute('pragma table_info({0})'.format(BPName))
+ cur.execute('DESCRIBE {0}'.format(BPName)) #поправить
  TabInfo=cur.fetchall()
+ #print(TabInfo)
  return render_template('MachLearn.html', TabData=TabData, TabList=TabList, TabInfo=TabInfo, BPName=BPName)
-
-def IsFloat(value):
- try:
-  float(value)
-  return True
- except ValueError:
-  return False
- except TypeError:
-  return False
   
-def IsInt(value):
- try:
-  int(value, 10)
-  return True
- except ValueError:
-  return False
- except TypeError:
-  return False
-  
-def FindMinMax2ME(ColData):
- n=len(ColData)
- ME=0
-
- for s in ColData:
-  ME+=s*(1/n)
- 
- return ME
-
-def FindMinMax2D(ColData, ME):
- n=len(ColData)
- D=0
-
- for s in ColData:
-  D+=(1/n)*math.pow((s-ME), 2)
-
- return D
- 
-def FindMinMaxListME(VecData, MEList, n):
- if MEList==[]:
-  MEList=[0 for i in VecData]
-
- for count, s in enumerate(VecData):
-  MEList[count]+=s*(1/n)
-
- return MEList
- 
-def FindMinMaxListD(VecData, MEList, DList, n):
- if DList==[]:
-  DList=[0 for i in VecData]
-
- for count, s in enumerate(VecData):
-  DList[count]+=(1/n)*math.pow((s-MEList[count]), 2)
-
- return DList
-
-def NoLineNormal2(ColData, ME, D):
- ColDataNormal=[]
- 
- if isinstance(ME, list)==False: 
-  #try:
-   for s in ColData:
-    if D!=0:
-     ColDataNormal.append(1/(math.exp((-0.3)*((s-ME)/math.sqrt(D)))+1))
-    else:
-     ColDataNormal.append(1/(math.exp((-0.3)*(s-ME))+1))
-    #ColDataNormal.append(1/(math.exp((-0.3)*(s/Cent-1))+1))
-  #except:
-   #import sys
-   #import ipdb
-   #tb = sys.exc_info()[2]
-   #ipdb.post_mortem(tb)
- else:
-  for i, me, d in zip(ColData, ME, D):
-   if d!=0:
-    ColDataNormal.append(1/(math.exp((-0.3)*((i-me)/math.sqrt(d)))+1))
-   else:
-    ColDataNormal.append(1/(math.exp((-0.3)*(i-me))+1))
-
- return ColDataNormal
-
-  
+'''
 def DataExecute(IdList, BPName, ColNames):
  db=get_db()
  DataList=Buf1=[]
@@ -381,25 +792,63 @@ def SelectDataExecute(RowsNumber, ColNumber):
    COData[count][i-1]=j
 
  return COData, COField
+'''
+def DataExecute(IdList, BPName, ColNames): 
+ conn = get_db()
+ cur = conn.cursor()
+ DataList, Buf1=[], [] 
+ Buf1.extend(IdList) 
+ GG=200 
+
+ if len(IdList)>GG: 
+  count, nex=0, 0 
+  Buf2=', '.join(s for s in ColNames) #There must be '?' 
+  while count<len(IdList): 
+   if (len(IdList)-count)>=GG: 
+    nex=GG 
+   else: 
+    nex=len(IdList)-count 
+
+   Buf3=[] 
+   #Buf3=', '.join('?' for i in range(0, nex)) edit by Ser
+   Buf3=', '.join(IdList[i] for i in range(count, count+nex))
+   #print(Buf3)   
+   #cur.execute('SELECT {0} FROM ({1}) WHERE id in ({2})'.format(Buf2, BPName, Buf3), IdList[count:count+nex])
+   cur.execute('SELECT {0} FROM ({1}) WHERE id in ({2})'.format(Buf2, BPName, Buf3))    
+   DataList.extend(cur.fetchall()) 
+
+   count+=nex 
+ else: 
+  Buf2=', '.join(s for s in ColNames) #There must be '?' 
+  #Buf3=', '.join('?' for s in IdList)
+  Buf3 =  ', '.join(s for s in IdList) 
+  #cur.execute('SELECT {0} FROM ({1}) WHERE id in ({2})'.format(Buf2, BPName, Buf3), Buf1)
+  cur.execute('SELECT {0} FROM ({1}) WHERE id in ({2})'.format(Buf2, BPName, Buf3))  
+  DataList=cur.fetchall() 
+
+ return DataList
 
 
-@app.route('/GoMachLearn2',  methods = ['GET', 'POST'])
-def GoMachLearn2():
- if request.form['Start']=='Старт!':
-  return GoMachLearnNew() 
+@app.route('/GoMachLearn',  methods = ['GET', 'POST'])
+def GoMachLearn():
+ if request.form['Start']=='Начать классификацию':
+  return ExtractionAlgorithms() 
  elif request.form['Start']=='Оптимизировать':
   return DeleteSameParam()
+ elif request.form['Start']=='Начать кросс-валидацию':
+  return PickingNeibCount()
   
 @app.route('/OptimizeData',  methods = ['GET', 'POST'])
 def OptimizeData():
- db=get_db()
+ conn = get_db()
+ cur = conn.cursor()
 
  if request.form['Optimize']=='Оптимизировать':
   RepIdList=DeleteSameParam()
   RepDataList=[]
 
   for RepId in RepIdList:
-   cur=db.execute('SELECT * FROM {0} WHERE id={1} ORDER BY id ASC'.format(BPName, RepId))
+   cur.execute('SELECT * FROM {0} WHERE id={1} ORDER BY id ASC'.format(BPName, RepId))
    RepDataList.append(list(cur.fetchone()))
 
  elif request.form['Optimize']=='Удалить':
@@ -407,48 +856,62 @@ def OptimizeData():
   RepDataList=[]
   
   for RepId in RepSelect:
-   db.execute('DELETE FROM {0} WHERE id={1}'.format(BPName, RepId))
+   cur.execute('DELETE FROM {0} WHERE id={1}'.format(BPName, RepId))
 
- cur=db.execute('SELECT * FROM {0} ORDER BY id ASC'.format(BPName))
+ cur.execute('SELECT * FROM {0} ORDER BY id ASC'.format(BPName))
  TabData=cur.fetchall()
- cur=db.execute("SELECT * FROM sqlite_master WHERE type = 'table'")
+ cur.execute("SELECT table_name FROM information_schema.tables where table_schema='table_storage'")
  TabList=cur.fetchall()
- cur=db.execute('pragma table_info({0})'.format(BPName))
+ cur.execute('DESCRIBE {0}'.format(BPName))
  TabInfo=cur.fetchall()
-
  return render_template('MachLearn.html', TabData=TabData, TabList=TabList, TabInfo=TabInfo, RepDataList=RepDataList, BPName=BPName)
  
- 
-#@app.route('/GoMachLearn2',  methods = ['GET', 'POST'])
-def GoMachLearnNew():   
- db=get_db()
- cur=db.execute("SELECT * FROM sqlite_master WHERE type = 'table'")
+def ExtractionAlgorithms():
+ ExtractAlgol=request.form.get('ExtractionAlgorithm')
+
+ if ExtractAlgol=='KNN':
+  return KNNAlgorithmExtraction()
+ else:
+  pass
+  
+def KNNAlgorithmExtraction():
+ conn=get_db()
+ cur = conn.cursor()
+ cur.execute("SELECT table_name FROM information_schema.tables where table_schema='table_storage'\
+				                             and table_name NOT LIKE '%Description'  and table_name NOT LIKE 'users'")
  TabList=cur.fetchall()
- cur=db.execute('pragma table_info({0})'.format(BPName))
+ cur.execute('DESCRIBE {0}'.format(BPName))
  TabInfo=cur.fetchall()
- cur=db.execute('SELECT * FROM {0} ORDER BY id ASC'.format(BPName))
+ cur.execute('SELECT * FROM {0} ORDER BY id ASC'.format(BPName))
  TabData=cur.fetchall()
- ColNames=[s[1] for count, s in enumerate(TabInfo) if count>0]
- #ColNames=[s[1] for s in range(1, len(TabInfo))]
- Algol=request.form.get('Algol')
+ cur.execute('SELECT * FROM {0} Description ORDER BY id ASC'.format(BPName))
+ TabDescrData=cur.fetchall()
+ 
+ if request.form.get('WeightOn')=='on':
+  Weight=[Str[7] for Str in TabDescrData]
+ else:
+  Weight=[1 for Str in TabDescrData]
+  
+ #flash(Weight)
+ ColNames=[s[0] for count, s in enumerate(TabInfo) if count>0]
  TSField=request.form.getlist('TSField')
  TSData=DataExecute(TSField, BPName, ColNames)
- RowsNumber=int(request.form['RowsNumber'], 10)
- ColNumber=int(request.form['ColNumber'], 10)
+ RowsNumber, ColNumber=int(request.form['RowsNumber'], 10), int(request.form['ColNumber'], 10)
  NeibCount=int(request.form['NeibCount'], 10)
- 
+ Metric=request.form.get('Metric')
+  
  if RowsNumber!=0:
   COData, COField=SelectDataExecute(RowsNumber, ColNumber)
-  AlgolMas={'KNN':KNNAlgol}
-  AnswerList, MinDistList, YMinDistList, MaxNeibList=AlgolMas[Algol](TSData, COData)
+  AnswerList, MinDistList, YMinDistList, MaxNeibList=KNNAlgorithm(TSData, COData, NeibCount, Metric, Weight)
+  #COData=zip(COField, COData, AnswerList, MaxNeibList)
+  #NumPar=4
   return render_template('MachLearn.html', TabData=TabData, TabList=TabList, TabInfo=TabInfo,
   COData=zip(COField, COData, AnswerList, MaxNeibList), NeibCount=NeibCount, NumPar=4, BPName=BPName)
  else:
   COField=request.form.getlist('COField')
   COData=DataExecute(COField, BPName, ColNames)
   RealAnswerList=DataExecute(COField, BPName, [ColNames[len(ColNames)-1]])
-  AlgolMas={'KNN':KNNAlgol}
-  AnswerList, MinDistList, YMinDistList, MaxNeibList=AlgolMas[Algol](TSData, COData)
+  AnswerList, MinDistList, YMinDistList, MaxNeibList=KNNAlgorithm(TSData, COData, NeibCount, Metric, Weight)
   CountCorAns=0
   for i, j in zip(RealAnswerList, AnswerList):
    if i[0]==j:
@@ -456,17 +919,19 @@ def GoMachLearnNew():
   Accuracy=round((CountCorAns/len(AnswerList))*100, 2)
 
   return render_template('MachLearn.html', TabData=TabData, TabList=TabList, TabInfo=TabInfo,
-  COData=zip(COField, COData, RealAnswerList, AnswerList, MaxNeibList), NeibCount=NeibCount, Accuracy=Accuracy, NumPar=5, BPName=BPName)
-
+  COData=zip(COField, COData, RealAnswerList, AnswerList, MaxNeibList), NeibCount=NeibCount, 
+  Accuracy=Accuracy, NumPar=5, BPName=BPName)
 
 @app.route('/GoMachLearn3',  methods = ['GET', 'POST'])
 def SavePrecInTable():#RAZOBRATSA. TODAY NEOHOTO
- db=get_db()
- cur=db.execute("SELECT * FROM sqlite_master WHERE type = 'table'")
+ conn = get_db()
+ cur = conn.cursor()
+ cur.execute("SELECT table_name FROM information_schema.tables where table_schema='table_storage'\
+				                             and table_name NOT LIKE '%Description'  and table_name NOT LIKE 'users'")
  TabList=cur.fetchall()
- cur=db.execute('pragma table_info({0})'.format(BPName))
+ cur.execute('DESCRIBE {0}'.format(BPName))
  TabInfo=cur.fetchall()
- ColNames=[s[1] for count, s in enumerate(TabInfo) if count>0]
+ ColNames=[s[0] for count, s in enumerate(TabInfo) if count>0]
  
  RowsNumber=int(request.form['RowsNumber'], 10)
  ColNumber=int(request.form['ColNumber'], 10)-1
@@ -476,29 +941,31 @@ def SavePrecInTable():#RAZOBRATSA. TODAY NEOHOTO
  
  for str in COData:
   ParamStr=', '.join('"{0}"'.format(s) for s in str)
-  cur=db.execute('INSERT INTO {0} ({1}) VALUES ({2})'.format(BPName, ColNamesStr, ParamStr))
+  cur.execute('INSERT INTO {0} ({1}) VALUES ({2})'.format(BPName, ColNamesStr, ParamStr))
 
- db.commit()
- cur=db.execute('SELECT * FROM '+BPName+' ORDER BY id ASC')
+ conn.commit()
+ cur.execute('SELECT * FROM '+BPName+' ORDER BY id ASC')
  TabData=cur.fetchall()
 
  return render_template('MachLearn.html', TabData=TabData, TabList=TabList, TabInfo=TabInfo, BPName=BPName)
 
 #@app.route('/DeleteSameParam',  methods = ['GET', 'POST'])
 def DeleteSameParam():#RAZOBRATSA/ TODAY NEOHOTO
- db=get_db()
- cur=db.execute('pragma table_info('+BPName+')')
+ conn = get_db()
+ cur = conn.cursor()
+ cur.execute('DESCRIBE {0}'.format(BPName))
  TabInfo=cur.fetchall()
  
- cur=db.execute('SELECT * FROM '+BPName+' ORDER BY id ASC')
+ cur.execute('SELECT * FROM '+BPName+' ORDER BY id ASC')
  RepIdList=[]
  
  for RowData in cur:
   RowDataLen=len(RowData)
   CondList=[str(i[1]) + '=' + str(j) for i, j in zip(TabInfo, RowData)]
   CondStr=' AND '.join(s for count, s in enumerate(CondList) if count>0 and count<RowDataLen-1)
-
-  cur2=db.execute('SELECT * FROM {0} WHERE {1}'.format(BPName, CondStr))
+  
+  cur2 = conn.cursor()
+  cur2.execute('SELECT * FROM {0} WHERE {1}'.format(BPName, CondStr))
   BufList=cur2.fetchall()
 
   if len(BufList)>1:
@@ -513,196 +980,174 @@ def DeleteSameParam():#RAZOBRATSA/ TODAY NEOHOTO
      RepIdList.append(s[0])
  
  return RepIdList
-
-def KNNAlgol(TSData, COData):
- ColCount=len(TSData[0])
- NeibCount=int(request.form['NeibCount'], 10)
- Metric=request.form.get('Metric')
  
- TSDataNormal, UnKeysMat, MEMat, DMat, Y=PrepareForKNN(TSData, ColCount)
- TSDataNormal=list(zip(*TSDataNormal))
- COData=PrepareCOData(COData)
- AnswerList, MinDistList, YMinDistList, MaxNeibList=[], [], [], []
+# @app.route('/logout')
+# def logout():
+ # session.pop('logged_in', None)
+ # flash('You were logged out')
+ # return redirect(url_for('show_entries'))
 
- for s in COData:
-  CODataNormal=NormalizeNewData(s, MEMat, DMat, UnKeysMat, ColCount)
-  MinDist, YMinDist, IdMinDist=KNN3(TSDataNormal, CODataNormal, NeibCount, Metric, Y)
-  Answer, MaxNeib=Voting(MinDist, YMinDist, IdMinDist)
-  AnswerList.append(Answer)
-  MinDistList.append(MinDist)
-  YMinDistList.append(YMinDist)
-  MaxNeibList.append(MaxNeib)
- 
- return AnswerList, MinDistList, YMinDistList, MaxNeibList
+@app.route('/OptimizationBP',  methods = ['POST'])
+def OptimizationBP():
+ conn = get_db()
+ cur = conn.cursor()
+ BPName=request.values.get('TableChoice')
+ OptArr=json.loads(request.values.get('JsonObj'))
+ #print(BPName)
+ cur.execute('SELECT * FROM {0} ORDER BY id ASC'.format(BPName))
+ TabData=cur.fetchall()
+ cur.execute('SELECT * FROM {0}Description ORDER BY id ASC'.format(BPName))
+ DescrTabData=cur.fetchall()
+ Weight=[Str[7] for Str in DescrTabData]
 
-def PrepareCOData(COData):
- NewCOData=[]
-
- for i in COData:
-  BufList=[]
-  for j in i:
-   if isinstance(j, list)==False and IsFloat(j)==False:
-    BufList.append([j])
+ if OptArr['OptAlgol']=='Classification':
+  OptTabData=Classification2(TabData[:], OptArr['ClassMetric'], Weight, float(OptArr['ClassSimilarity']))	 
+ elif OptArr['OptAlgol']=='KMeans':
+  OptTabData=KMeans2(TabData, int(OptArr['KMClusterCount'], 10), OptArr['KMMetric'], Weight, OptArr['KMPrimaryCenter'])
+ elif OptArr['OptAlgol']=='TimurAlgorithm':
+  OptTabData=TimurAlgorithm2(TabData[:])
+ '''
+ if len(OptTabData)!=0:
+  for Str in TabData:
+   if (len(OptTabData)==0 or Str[0]!=OptTabData[0][0]):
+    db.execute('DELETE FROM {0} WHERE id={1}'.format(BPName, Str[0]))
    else:
-    BufList.append(j)
-  NewCOData.append(BufList)	
+    OptTabData.pop(0)
+ '''
 
- return NewCOData
+ if len(OptTabData)!=0:
+  #print(','.join(str(Str[0]) for Str in OptTabData))
+  cur.execute('DELETE FROM {0} WHERE id NOT IN ({1})'.format(BPName, ','.join(str(Str[0]) for Str in OptTabData)))
 
-def NormalizeNewData(NewData, MEMat, DMat, UnKeysMat, ColCount):
- count=0
- NewDataNormal=[]
+ conn.commit()
+ return 'Success'
+
  
- for  s, ME, D in zip(NewData, MEMat, DMat):
-  if IsFloat(s)==False:
-   CountKeysData=Vectorization.CountKeysInStr(s, UnKeysMat[count])
-   NewDataNormal.append(NoLineNormal2(CountKeysData, ME, D))
-   count+=1
-  else:
-   if D!=0:
-    NewDataNormal.append(1/(math.exp((-0.3)*((float(s)-float(ME))/math.sqrt(float(D))))+1))#OBEDINIT
+ 
+def ImprovingEfficiency():
+ Method=request.form.get('ImpEffAlgorithm')
+ conn = get_db()
+ cur = conn.cursor()
+ cur.execute('SELECT * FROM {0} ORDER BY id ASC'.format(BPName))
+ TabData=cur.fetchall()
+ cur.execute('SELECT * FROM {0}Description ORDER BY id ASC'.format(BPName))
+ TabDescrData=cur.fetchall()
+ #if request.form.get('WeightOn')=='on':
+ Weight=[Str[7] for Str in TabDescrData]
+ #else:
+  #Weight=[1 for Str in TabDescrData]
+
+ if Method=='KMeans':
+  ClusterCount=int(request.form['ClusterCount'], 10)
+  Metric=request.form.get('Metric')
+  PrimCent=request.form.get('PrimaryCenter')
+  Id, mu=KMeans(TabData, ClusterCount, Metric, Weight, PrimCent)
+
+ elif Method=='Classification':
+  Similarity1=float(request.form['Similarity'])
+  Metric=request.form.get('Metric')
+  Id=Classification(TabData, Metric, Weight, Similarity1)
+
+ elif Method=='TimurAlgorithm':
+  Id=TimurAlgorithm(TabData)
+ 
+ if len(Id)==0:
+  cur.execute('DELETE FROM {0}'.format(BPName))
+ else:
+  IdDel, i=[], 0
+  
+  for Str in TabData:
+   #flash('Str: {0}   Id: {1}'.format(Str[0], Id[i]))
+   if (len(Id)!=0):
+    if Str[0]!=Id[0]:
+     IdDel.append(Str[0])
+    else:
+     Id.pop(0)
    else:
-    NewDataNormal.append(1/(math.exp((-0.3)*(float(s)-float(ME)))+1))#OBEDINIT
+    IdDel.append(Str[0])
+   
+  DeleteFromBP(IdDel, BPName)
+  #Buf=', '.join('?' for id in Id)
+  #db.execute('DELETE FROM {0} WHERE id NOT IN ({1})'.format(BPName, Buf), Id)
  
- return NewDataNormal
- 
-def PrepareForKNN(TabData, ColCount):
- TabDataNormal, UnKeysMat, Y, MEMat, DMat=[], [], [], [], []
- 
- for CurCol in range(0, ColCount-1):
-  ColData, ColDataNormal=[], []
+def DeleteFromBP(IdList, BPName): 
+ conn = get_db()
+ cur = conn.cursor()
+ GG=200 
 
-  for s in TabData:
-   buf=s[CurCol]
-   if isinstance(s[CurCol], list)==False and IsFloat(s[CurCol])==False:
-    buf=[buf]
-   ColData.append(buf)
+ if len(IdList)>GG: 
+  count, nex=0, 0 
+  while count<len(IdList): 
+   if (len(IdList)-count)>=GG: 
+    nex=GG 
+   else: 
+    nex=len(IdList)-count 
+
+   Buf=[] 
+   Buf=', '.join('?' for i in range(0, nex)) 
+   cur.execute('DELETE FROM {0} WHERE id IN ({1})'.format(BPName, Buf), IdList[count:count+nex])
+   count+=nex 
+ else: 
+  Buf=', '.join('?' for s in IdList) 
+  cur.execute('DELETE FROM {0} WHERE id IN ({1})'.format(BPName, Buf), IdList)
+ 
+ 
+ 
+def CrossValidation(NeibCount):
+ conn = get_db()
+ cur = conn.cursor()
+ cur.execute('SELECT * FROM {0} ORDER BY id ASC'.format(BPName))
+ TabData=cur.fetchall()
+ Method=request.form.get('CrossValidation')
+ Metric=request.form.get('CVMetric')
+ cur.execute('SELECT * FROM {0}Description ORDER BY id ASC'.format(BPName))
+ TabDescrData=cur.fetchall()
+ 
+ if request.form.get('WeightOn')=='on':
+  Weight=[Str[7] for Str in TabDescrData]
+ else:
+  Weight=[1 for Str in TabDescrData] 
+ Acc=0
+ 
+ if Method=='KFoldCV':
+  BlockCount=int(request.form['BlockCount'], 10)
+  Acc=KFoldCV(TabData, BlockCount, NeibCount, Metric, Weight)
   
-  #Y=ColData#ERES AND KOSTIL
-  if IsFloat(ColData[0])==False:
-   UnKeys=Vectorization.CollectUnKeys(ColData, [])
-   UnKeysMat.append(UnKeys)
-   ME, D=[], []
-
-   for s in ColData:
-    CountKeysData=Vectorization.CountKeysInStr(s, UnKeys)
-    ME=FindMinMaxListME(CountKeysData, ME, len(ColData))
-	
-   for s in ColData:
-    CountKeysData=Vectorization.CountKeysInStr(s, UnKeys)
-    D=FindMinMaxListD(CountKeysData, ME, D, len(ColData))
-
-   for s in ColData:
-    CountKeysData=Vectorization.CountKeysInStr(s, UnKeys)
-    ColDataNormal.append(NoLineNormal2(CountKeysData, ME, D))
-
-  else:
-   ME=FindMinMax2ME(ColData)
-   D=FindMinMax2D(ColData, ME)
-   ColDataNormal=NoLineNormal2(ColData, ME, D)
-
-  MEMat.append(ME)
-  DMat.append(D)
-  TabDataNormal.append(ColDataNormal)
-
- for s in TabData:
-  Y.append(s[ColCount-1]) 
+ elif Method=='HoldOutCV':
+  PercentTS=int(request.form['PercentTS'], 10)
+  IterationCount=int(request.form['IterationCount'], 10)
+  Acc=HoldOutCV(TabData, PercentTS, IterationCount, NeibCount, Metric, Weight)
   
- return TabDataNormal, UnKeysMat, MEMat, DMat, Y
+ elif Method=='LOOCV':
+  Acc=KFoldCV(TabData, len(TabData), NeibCount, Metric, Weight)
 
-def KNN3(TabDataNormal, NewDataNormal, NeibCount, Metric, Y):
- MinDist, YMinDist, IdMinDist=[], [], []
- Left, Right=-1, -1
-
- for id, str in enumerate(TabDataNormal):
-  MetricMas={'MetL1':MetL1,'MetEuclid':MetEuclid,'MetCheb':MetCheb}
-  dist=MetricMas[Metric](str, NewDataNormal)
-
-  if len(MinDist)<NeibCount:
-   if Left==-1:
-    Left, Right=dist, dist
-    LeftPos, RightPos=0, 0
-   elif dist<Left:
-    Left=dist
-    LeftPos=id
-   elif dist>Right:
-    Right=dist
-    RightPos=id
-	
-   MinDist.append(dist)
-   YMinDist.append(Y[id])
-   IdMinDist.append(id)
-  else:
-   if dist<=Left:
-    Left=dist
-    LeftPos=RightPos
+ return Acc
  
-   if (dist<=Left) or (Left<dist and dist<Right):
-    MinDist[RightPos]=dist
-    YMinDist[RightPos]=Y[id]
-    IdMinDist[RightPos]=id
-
-    Right, RightPos=MinDist[0], 0
-    
-    for count, i in enumerate(MinDist):#Maybe here we need float
-     if i>Right:
-      Right=i
-      RightPos=count
-
- return MinDist, YMinDist, IdMinDist
-
-def MetL1(str, NewDataNormal):
- dist=0
+def PickingNeibCount(): 
+ conn = get_db()
+ cur = conn.cursor()
+ cur.execute("SELECT table_name FROM information_schema.tables where table_schema='table_storage'\
+				                             and table_name NOT LIKE '%Description' and table_name NOT LIKE 'users'")
+ TabList=cur.fetchall()
+ cur.execute('DESCRIBE {0}'.format(BPName))
+ TabInfo=cur.fetchall()
+ cur.execute('SELECT * FROM {0} ORDER BY id ASC'.format(BPName))
+ TabData=cur.fetchall()
+ MaxAcc, MaxNeibCount=-1, 0
+ TabData=Shuffle(TabData)
+ TabData=Shuffle(TabData)
+ TabData=Shuffle(TabData)
+ a, b=1, 18
+ AccList=[a,b]
  
- for i, j in zip(str, NewDataNormal):
-  if isinstance(i, list)==True:
-   dist+=MetL1(i, j)
-  else:
-   dist+=math.fabs(i-j)
-
- return dist
+ for NeibCount in range (a, b):
+  Acc=CrossValidation(NeibCount)
+  #flash('Accuracy: {0}   Count: {1}'.format(Acc, NeibCount))
+  AccList.append(Acc)
+  if Acc>=MaxAcc:
+   MaxAcc=Acc
+   MaxNeibCount=NeibCount
  
-def MetEuclid(str, NewDataNormal):
- dist=0
- 
- for i, j in zip(str, NewDataNormal):
-  if isinstance(i, list)==True:
-   dist+=math.pow(MetL1(i, j), 2)
-  else:
-   dist+=math.pow(i-j, 2)
-
- return math.sqrt(dist)
- 
-def MetCheb(str, NewDataNormal):
- dist=0
-
- for i, j in zip(str, NewDataNormal):
-  if isinstance(i, list)==True:
-   buf=MetCheb(i,j)
-  else:
-   buf=math.fabs(i-j)
-  if buf>dist:
-   dist=buf
-
- return dist
- 
-def Voting(MinDist, YMinDist, IdMinDist):
- max=0
-
- for y1 in YMinDist:
-  count=0
-  for y2 in YMinDist:#I can decrease count
-   if y1==y2:
-    count+=1
-  if count>max:
-   max=count
-   Answer=y1
-
- return Answer, max
- 
-@app.route('/logout')
-def logout():
-    session.pop('logged_in', None)
-    flash('You were logged out')
-    return redirect(url_for('show_entries'))
-	
+ #flash(MaxNeibCount)
+ #flash(MaxAcc)
+ return render_template('MachLearn.html', TabData=TabData, TabList=TabList, TabInfo=TabInfo, BPName=BPName, AccList=AccList, MaxAcc=MaxAcc, MaxNeibCount=MaxNeibCount)

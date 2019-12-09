@@ -1,0 +1,177 @@
+#EditTabDataDiv{
+	text-align:center;
+}
+
+.TabDataHeader{
+	display: inline-block;
+	vertical-align: top;
+}
+
+#TableChoiceTab ul li:hover{
+	cursor:pointer;
+}
+
+.panel.panel-default{
+	/* width: 400px; */
+	height: 310px;
+	display: inline-block;
+	border:solid 1px #999;
+	vertical-align: top;
+	font-size: 14px;
+	text-align: center;
+}
+
+.panel-heading{
+	height: 14%;
+}
+
+.panel-body{
+	height: 86%;
+}
+
+.nav-tabs.Tools{
+	display: inline-block;
+	vertical-align: top;
+	border-bottom: 0px;
+	text-align: center;
+}
+
+.nav-tabs.Tools > li{
+	margin-bottom: -2px;
+}
+
+.tab-content.Tools{
+	border: 1px solid lightgray;
+	border-radius: 10px;
+	/* width: 1300px; */
+	margin: 0 auto;
+	padding: 15px;
+}
+
+/* .tab-content.Tools > div{ */
+.row{
+	font-size:0px;
+	/* margin-top: 10px; */
+	margin-bottom: 10px;
+}
+
+.panel-div{
+	font-weight:bold;
+	font-size: 15px;
+	margin: 0 auto;
+	margin-bottom: 5px;
+}
+
+.btn-fat{
+	width: 100%;
+	max-width: 200px;
+	height: 54px;
+}
+
+.btn-2line{
+	white-space: pre-line;
+	/* width: 160px; */
+	width: 90%;
+	/* max-width: 200px; */
+}
+
+.radio-answer{
+	font-weight:bold;
+	font-size: 14px;
+}
+
+hr{
+	width: 100%;
+	border-top: 1px solid gray;
+}
+
+#WorkWithColumns .panel-default, #WorkWithData .panel-default, #ImproveEfficiency .panel-default{
+	/* width: 500px; */
+}
+
+#WorkWithData .panel-default{
+	height: 100%;
+	max-height: 500px;
+}
+
+#ImproveEfficiency .panel-default{
+	height: 100%;
+	max-height: 500px;
+}
+
+/* .div-inline-block.wrapper, .div-inline-block.wrapper{ */
+	/* height: 100%; */
+	/* padding-top: 15px; */
+	/* margin: 0; */
+/* } */
+
+#ExportBPToFile{
+	height: 54px;
+}
+
+.div-inline-block{
+	display: inline-block;
+	width: 49%;
+	vertical-align: top;
+	font-weight: bold;
+	font-size: 15px;
+}
+
+.div-inline-block.left{
+	min-width: 100px;
+}
+.div-inline-block.left > *{
+	float: left;
+	padding-bottom: 15px;
+	line-height: 34px;
+}
+.div-inline-block.left > br{
+	clear: left;
+}
+
+/* .vertical-hr{ */
+	/* display: inline-block; */
+	/* border-top: 300px solid black; */
+	/* width: 1px; */
+	/* margin-top: 0px; */
+/* } */
+
+
+.btn-file div{
+	position: relative; 
+	overflow: hidden; 
+	height: 34px;
+	line-height: 34px;
+	padding: 0;
+	padding-left: 10px; 
+	padding-right: 10px;
+}
+
+.btn-file input {
+	position: absolute;
+	top: 0;
+	right: 0;
+	margin: 0;
+	opacity: 0;
+	font-size: 23px; 
+	cursor: pointer; 
+}
+
+input[type="checkbox"]{
+	height: 20px;
+	width: 20px;
+}
+
+.prokrutka{
+	height: 140px;
+	overflow-y: scroll;
+}
+
+#TabSelect a{
+	cursor: pointer; 
+	height: 35px;
+	line-height: 35px;
+	text-align: center;
+	padding:0px;
+}
+/*----------------------*/

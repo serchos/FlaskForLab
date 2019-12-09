@@ -1,0 +1,220 @@
+html,body{
+	height:100%;
+	font-family: 'Fira Sans', sans-serif;
+	margin-right: 5px;
+}
+
+.page-header {
+    background-color: white;
+    margin: 0px;                        /*движение заголовка по Оу*/
+    padding: 10px 10px 20px 40px;       /*границы: верхн, пр, нижн, л*/
+}
+
+.page-header h1	{
+    color: #333;
+    font-size: 40pt;
+}
+.table-striped {
+	margin-top: 10px;
+	border: 1px;
+	border-style: solid;
+	border-color: #333;
+}
+
+.table-striped tr{
+	border: 1px;
+	border-style: solid;
+	border-color: #333;
+}
+.table-striped td{
+	border: 1px;
+	border-style: solid;
+	border-color: #333;
+}
+.table_scroll  {
+	 height: 300px; overflow-y: scroll;
+}
+.table_scroll_2  {
+	 height: auto; overflow-y: scroll;
+
+}
+.our_menu {
+	margin-left:20px;
+	margin-right:5px;
+}
+.page-header a	{
+	text-decoration: none;
+}
+.log_io	{
+	position: absolute;
+	background: white;
+	display: inline-block;
+    top: 0;
+	right: 0;
+	margin-right: 30px;
+	margin-top: 15px;
+	padding: 0em;
+}
+
+.log_io a {
+	font-size: 1.5em;
+	color: #333;
+	text-decoration: none;
+}
+
+.wrapper{
+	height:100%;
+	display:flex;
+	flex-direction:column;
+}
+.pages {
+	flex:1 0 auto;
+	padding: 1.5px 0px 0px 25px;
+}
+
+.pages h1{
+	font-size: 23pt;
+	text-align: center;
+}
+.pages1 {
+	flex:1 0 auto;
+}
+
+.rightimg  {
+    float: right; /* Выравнивание по правому краю  */ 
+    margin: 0px 80px 5px 7px; /* Отступы вокруг картинки */
+	width: 350px;
+	height: 350px;
+}
+
+.supertext {
+	padding-top: 20px;
+	width: 60%;
+	font-size: 15pt;
+}
+
+.panel.panel-default {
+	width: 98%;
+}
+
+.footfix{
+	flex:0 0 auto;
+	padding:10px;
+}
+
+.DataTableCl th, #first_tr {
+	background-color: lightblue; 
+}
+
+.buttons {
+	 margin-top: 5px; /* Обнуляем значение отступов */
+   /* padding: 4px;*/ /* Значение полей */
+}
+
+ .buttons li {
+    display: inline; /* Отображать как строчный элемент */
+    margin-right: 5px; /* Отступ слева */
+}
+  
+.select {
+   background: transparent;
+   width: 268px;
+   padding: 5px;
+   font-size: 16px;
+   border: 1px solid #ccc;
+   height: 34px;
+}
+.in_row_div {
+	display: inline-block; 
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+.in_row_div div{
+	display: inline-block; 
+	margin-top: 10px;
+	margin-bottom: 10px;
+	margin-right: 10px;
+	padding: 2px;
+	width: 300px;
+	height: 80px;
+	border: 1px;
+	border-color: #333;
+}
+/*Для лаб*/
+
+img {
+    max-width: 100%;
+	max-height: 100%;
+}
+.Banner {
+	position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 200px;
+    width: 200px;
+}
+
+.Timer{
+	height: 50px;
+	font-family: serif;
+    font-size: 20pt;
+}
+
+.Timer p{
+	display: inline-block;
+}
+
+.MenuUL{
+	list-style: none;
+}
+
+.MenuA{
+	/*text-decoration: none;*/
+}
+
+
+
+
+
+
+
+
+
+.MenuUL1 ul {
+  display: none;
+  background-color: #f90;
+  position: absolute;
+  top: 100%;
+}
+.MenuUL1 li:hover ul { 
+	display: block; 
+}
+
+.MenuUL1, .MenuUL1 ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+.MenuUL1 {
+  height: 30px;
+  background-color: #666;
+  padding-left: 25px;
+  min-width: 470px;
+}
+.MenuUL1 li {
+  float: left;
+  position: relative;
+  height: 100%;
+}
+.MenuUL1 li a {
+  display: block;
+  padding: 6px;
+  width: 100px;
+  color: #fff;
+  text-decoration: none;
+  text-align: center;
+}
+.MenuUL1 ul li { float: none; }
+.MenuUL1 li:hover { background-color: #f90; }
+.MenuUL1 ul li:hover { background-color: #666; }
+
