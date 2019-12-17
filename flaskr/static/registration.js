@@ -9,8 +9,8 @@
     // $('html,body').scrollTop(scrollmem);
   // });
 // });
-$(document).ready(function() { 
-	
+$(document).ready(function() {
+
 	$('input:password + .glyphicon').on('click', function() {
   		$(this).toggleClass('glyphicon-eye-close').toggleClass('glyphicon-eye-open'); // toggle our classes for the eye icon
   		var password = $(this).prev($('input:password'));
@@ -20,7 +20,7 @@ $(document).ready(function() {
 		$('#secret_word_div').show();
 		$('#input_password').hide();
 	});
-	$('#signUpbutton').on('click', function() { 
+	$('#signUpbutton').on('click', function() {
 		registration();
 	});
 	$('#signInbutton').on('click', function() {
@@ -28,22 +28,28 @@ $(document).ready(function() {
 	});
 })
 	function togglePassword(pass) {
-		
-			var type = pass.attr("type"); 
+
+			var type = pass.attr("type");
 			if (type === 'password')
 		{
-			pass.attr("type","text");			
+			pass.attr("type","text");
 		}
 		else
 		{
   			pass.attr("type", "password");
-		} 
+		}
 
 	}
 function registration()
 	{
+	    if ($('#inputPassword2').val() != $('#confirmPassword').val())
+		{
+			alert('Ошибка! Пароли не совпадают!');
+			return;
+		}
+
 		$.ajax({
-		type: "POST", 
+		type: "POST",
 		url: "/registration",
 		data: {login: $('#inputLogin2').val(), pass: $('#inputPassword2').val(), secretWord: $('#secretWord').val()},
 		success: function(data){
@@ -60,9 +66,9 @@ function registration()
 function login()
 	{
 		$.ajax({
-		type: "POST", 
+		type: "POST",
 		url: "/loginRequest",
-		
+
 		data: {login: $('#inputLogin').val(), pass: $('#inputPassword').val(), secretWord: $('#secretWord').val()},
 		success: function(data){
 			alert('Вход выполнен');

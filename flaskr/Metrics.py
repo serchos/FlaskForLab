@@ -2,7 +2,7 @@ import os, io, math
 
 def MetricL1(str, NewDataNormal, Weight):
  dist=0
- 
+
  for i, j, w in zip(str, NewDataNormal, Weight):
   if isinstance(i, list)==True:
    dist+=MetricL1(i, j, [w for ii in i])
@@ -13,15 +13,15 @@ def MetricL1(str, NewDataNormal, Weight):
 
 def MetricEuclid(str, NewDataNormal, Weight):
  dist=0
- 
+
  for i, j, w in zip(str, NewDataNormal, Weight):
   if isinstance(i, list)==True:
    dist+=math.pow(w*MetricL1(i, j, [w for ii in i]), 2)
   else:
    dist+=math.pow(w*(i-j), 2)
- 
+
  return math.sqrt(dist)
- 
+
 def MetricChebyshev(str, NewDataNormal, Weight):
  dist=0
 
@@ -34,3 +34,25 @@ def MetricChebyshev(str, NewDataNormal, Weight):
    dist=buf
 
  return dist
+
+def MetricSquareEuclid(str, NewDataNormal, Weight):
+ dist = 0
+
+ for i, j, w in zip(str, NewDataNormal, Weight):
+  if isinstance(i, list) == True:
+   dist += math.pow(w*MetricL1(i, j, [w for ii in i]), 2)
+  else:
+   dist += math.pow(w*(i - j), 2)
+
+ return dist
+
+def MetricMinkowskiWithPow5(str, NewDataNormal, Weight):
+ dist = 0
+
+ for i, j, w in zip(str, NewDataNormal, Weight):
+  if isinstance(i, list) == True:
+   dist += math.pow(w*MetricL1(i, j, [w for ii in i]), 5)
+  else:
+   dist += math.pow(w*(i - j), 5)
+
+ return math.pow(dist, 1//5)

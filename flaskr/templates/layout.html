@@ -5,10 +5,10 @@
 	<link href="https://fonts.googleapis.com/css?family=Fira+Sans" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css?family=Open+Sans|PT+Serif" rel="stylesheet">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css"> 
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script> 
-	
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}"> 
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 	<script type="text/javascript" src="{{ url_for('static', filename='Common.js') }}"></script>
 
 	{% block scripts %}{% endblock %}
@@ -20,9 +20,9 @@
 	<div class="LayoutPageHeader">
 		<a href="{{ url_for('MainPage') }}">
 			  <img src="{{ url_for('static', filename='CBR.png') }}" align="left">
-			  <h1 style="margin:10px;">Научно-исследовательская работа</h1>
+			  <h1 style="margin:10px;">Лабораторная работа по СКТ</h1>
 		</a>
-		
+
 		<div class="log_io">
 			{% if session.username %}
 				<a href="{{ url_for('logout') }}">log out</a>
@@ -32,12 +32,12 @@
 			{% endif %}
 		</div>
 	</div>
-		
+
 	<div id="MainMenu">
 		<nav class="navbar navbar-inverse" role="navigation">
 			<div class="container-fluid">
 				<!--Название сайта и кнопка раскрытия меню для мобильных-->
-				
+
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
 						<span class="sr-only">Toggle navigation</span>
@@ -47,29 +47,26 @@
 					</button>
 					<a class="navbar-brand" href="{{ url_for('MainPage') }}">Главная страница</a>
 				</div>
-				
+
 				<!-- Само меню -->
-				<div class="collapse navbar-collapse">
+				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 					<ul class="nav navbar-nav">
 						<li {% block MenuExpHandLoad %}{% endblock %}><a href="{{ url_for('ExpHandLoad') }}">Создать БП</a></li>
-						<li {% block MenuStructLoad %}{% endblock %}><a href="{{ url_for('StructLoad') }}">Создать структурированную БП</a></li>
 						<li {% block ActiveMenuLookBP %}{% endblock %}><a href="{{ url_for('LookBP') }}">Просмотреть БП</a></li>
 						<li {% block ActiveMenuEditBP %}{% endblock %}><a href="{{ url_for('EditBP') }}">Редактировать БП</a></li>
 						<li {% block MenuMachLearn %}{% endblock %}><a href="{{ url_for('MachLearn') }}">Реализация алгоритмов</a></li>
 						<li class="dropdown">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Справочные материалы <span class="caret"></span></a>
 							<ul class="dropdown-menu" role="menu">
-								<li><a href="#">Работа с системой</a></li>
-								<li><a href="#">Задания</a></li>
-								<li><a href="#">Команда разработчиков</a></li>
+								<li><a href="https://drive.google.com/file/d/1MnsrMgUJpwVolGkRABO2v2KmvIhXYZlg/view" target="_blank">Задание для лабораторной работы</a></li>
 							</ul>
-						</li>						
+						</li>
 					</ul>
 				</div>
 			</div>
 		</nav>
 	</div>
-	
+
 	<div class="Pages">
 		{% block body %}{% endblock %}
 	</div>

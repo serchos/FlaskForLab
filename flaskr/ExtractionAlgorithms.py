@@ -1,5 +1,5 @@
 import os, io, math, random, Vectorization
-from Metrics import MetricL1, MetricEuclid, MetricChebyshev
+from Metrics import MetricL1, MetricEuclid, MetricChebyshev, MetricSquareEuclid, MetricMinkowskiWithPow5
 from flask import flash
 
 #--------------------------KNN Algorithm----------------------------
@@ -19,14 +19,14 @@ def KNNAlgorithm(TSData, COData, NeibCount, Metric, Weight):
   MinDistList.append(MinDist)
   YMinDistList.append(YMinDist)
   MaxNeibList.append(MaxNeib)
- 
+
  return AnswerList, MinDistList, YMinDistList, MaxNeibList
- 
+
 def KNN(TabDataNormal, NewDataNormal, NeibCount, Metric, Weight, Y):
  MinDist, YMinDist, IdMinDist=[], [], []
  Left, Right=-1, -1
- MetricMas={'MetricL1':MetricL1,'MetricEuclid':MetricEuclid,'MetricChebyshev':MetricChebyshev}
- 
+ MetricMas={'MetricL1':MetricL1,'MetricEuclid':MetricEuclid,'MetricChebyshev':MetricChebyshev, 'MetricSquareEuclid':MetricSquareEuclid, 'MetricMinkowskiWithPow5':MetricMinkowskiWithPow5}
+
  for id, str in enumerate(TabDataNormal):
   dist=MetricMas[Metric](str, NewDataNormal, Weight)
 
@@ -40,7 +40,7 @@ def KNN(TabDataNormal, NewDataNormal, NeibCount, Metric, Weight, Y):
    elif dist>Right:
     Right=dist
     RightPos=id
-	
+
    MinDist.append(dist)
    YMinDist.append(Y[id])
    IdMinDist.append(id)
@@ -48,21 +48,21 @@ def KNN(TabDataNormal, NewDataNormal, NeibCount, Metric, Weight, Y):
    if dist<=Left:
     Left=dist
     LeftPos=RightPos
- 
+
    if (dist<=Left) or (Left<dist and dist<Right):
     MinDist[RightPos]=dist
     YMinDist[RightPos]=Y[id]
     IdMinDist[RightPos]=id
 
     Right, RightPos=MinDist[0], 0
-    
+
     for count, i in enumerate(MinDist):#Maybe here we need float
      if i>Right:
       Right=i
       RightPos=count
 
  return MinDist, YMinDist, IdMinDist
- 
+
 def Voting(MinDist, YMinDist, IdMinDist):
  max=0
 
@@ -75,7 +75,7 @@ def Voting(MinDist, YMinDist, IdMinDist):
    max=count
    Answer=y1
 
- return Answer, max 
+ return Answer, max
 #-----------------------------------------------------------------------------
 #------------------------------Help Functions---------------------------------
 def PrepareCOData(COData):
@@ -88,14 +88,14 @@ def PrepareCOData(COData):
     BufList.append([j])
    else:
     BufList.append(j)
-  NewCOData.append(BufList)	
+  NewCOData.append(BufList)
 
  return NewCOData
 
 def NormalizeNewData(NewData, MEMat, DMat, UnKeysMat, ColCount):
  count=0
  NewDataNormal=[]
- 
+
  for  s, ME, D in zip(NewData, MEMat, DMat):
   if IsFloat(s)==False:
    CountKeysData=Vectorization.CountKeysInStr(s, UnKeysMat[count])
@@ -106,12 +106,12 @@ def NormalizeNewData(NewData, MEMat, DMat, UnKeysMat, ColCount):
     NewDataNormal.append(1/(math.exp((-0.3)*((float(s)-float(ME))/math.sqrt(float(D))))+1))#OBEDINIT
    else:
     NewDataNormal.append(1/(math.exp((-0.3)*(float(s)-float(ME)))+1))#OBEDINIT
- 
+
  return NewDataNormal
- 
+
 def PrepareForKNN(TabData, ColCount):
  TabDataNormal, UnKeysMat, Y, MEMat, DMat=[], [], [], [], []
- 
+
  for CurCol in range(0, ColCount-1):
   ColData, ColDataNormal=[], []
 
@@ -120,7 +120,7 @@ def PrepareForKNN(TabData, ColCount):
    if isinstance(s[CurCol], list)==False and IsFloat(s[CurCol])==False:
     buf=[buf]
    ColData.append(buf)
-  
+
   #Y=ColData#ERES AND KOSTIL
   if IsFloat(ColData[0])==False:
    UnKeys=Vectorization.CollectUnKeys(ColData, [])
@@ -149,8 +149,8 @@ def PrepareForKNN(TabData, ColCount):
   TabDataNormal.append(ColDataNormal)
 
  for s in TabData:
-  Y.append(s[ColCount-1]) 
-  
+  Y.append(s[ColCount-1])
+
  return TabDataNormal, UnKeysMat, MEMat, DMat, Y
 
 def IsFloat(value):
@@ -161,7 +161,7 @@ def IsFloat(value):
   return False
  except TypeError:
   return False
-  
+
 def IsInt(value):
  try:
   int(value, 10)
@@ -170,14 +170,14 @@ def IsInt(value):
   return False
  except TypeError:
   return False
-  
+
 def FindMinMax2ME(ColData):
  n=len(ColData)
  ME=0
 
  for s in ColData:
   ME+=s*(1/n)
- 
+
  return ME
 
 def FindMinMax2D(ColData, ME):
@@ -188,7 +188,7 @@ def FindMinMax2D(ColData, ME):
   D+=(1/n)*math.pow((s-ME), 2)
 
  return D
- 
+
 def FindMinMaxListME(VecData, MEList, n):
  if MEList==[]:
   MEList=[0 for i in VecData]
@@ -197,7 +197,7 @@ def FindMinMaxListME(VecData, MEList, n):
   MEList[count]+=s*(1/n)
 
  return MEList
- 
+
 def FindMinMaxListD(VecData, MEList, DList, n):
  if DList==[]:
   DList=[0 for i in VecData]
@@ -209,8 +209,8 @@ def FindMinMaxListD(VecData, MEList, DList, n):
 
 def NoLineNormal2(ColData, ME, D):
  ColDataNormal=[]
- 
- if isinstance(ME, list)==False: 
+
+ if isinstance(ME, list)==False:
   #try:
    for s in ColData:
     if D!=0:

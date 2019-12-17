@@ -5,7 +5,7 @@
 {% block scripts %}
 	<script type="text/javascript" src="{{ url_for('static', filename='EditBP.js') }}"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='LookBP.js') }}"></script>
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='EditBP.css') }}"> 
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='EditBP.css') }}">
 {% endblock %}
 
 {% block body %}
@@ -13,36 +13,36 @@
 
 	<div id="EditTabDataDiv">
 		<div class="TabDataHeader">
-		
+
 			<div class="progress-div" hidden>
 				<progress id="ProgressBar" value="0" max="100" ></progress>
 				<span class="progress-text">Загрузка</span>
 			</div>
-			
+
 			<ul id="TabNav" class="nav nav-tabs">
-			
+
 				<li id=TableChoiceTab class="dropdown">
 					<a data-toggle="dropdown" class="dropdown-toggle" href="#">
-						<span>Выберите базу</span> 
+						<span>Выберите базу</span>
 						<b class="caret"></b>
 					</a>
-					
+
 					<ul class="dropdown-menu">
 						{% for Tab in TabList %}
 							<li><a>{{ Tab }}</a></li>
 						{% endfor %}
 					</ul>
 				</li>
-			
-			
+
+
 				<li class="active"><a data-toggle="tab" href="#TabDataDiv">База прецедентов</a></li>
 				<li><a data-toggle="tab" href="#DescrTabDataDiv">Описание параметров прецедентов</a></li>
-				
+
 			</ul>
 		</div>
-	
+
 		<div class="tab-content">
-		
+
 			<div id="TabDataDiv" class="tab-pane fade in active">
 				<div class="table_scroll">
 					<table id="TabData" class="table table-striped table-bordered">
@@ -99,7 +99,7 @@
 					</table>
 				</div>
 			</div>
-			
+
 			<div id="DescrTabDataDiv" class="tab-pane fade">
 				<div class="table_scroll">
 					<table id="DescrTabData" class="table table-striped table-bordered">
@@ -141,19 +141,18 @@
 				</div>
 			</div>
 		</div>
-	
+
 		<br>
-		
+
 		<ul class="nav nav-tabs Tools">
 			<li class="active"><a data-toggle="tab" href="#WorkWithStrings">Работа со строками</a></li>
 			<li><a data-toggle="tab" href="#WorkWithColumns">Работа со столбцами</a></li>
 			<li><a data-toggle="tab" href="#WorkWithData">Работа с данными</a></li>
 			<li><a data-toggle="tab" href="#WorkWithTable">Работа с таблицами</a></li>
-			<li><a data-toggle="tab" href="#ImproveEfficiency">Повышение эффективности</a></li>
 		</ul>
 
 		<div class="tab-content Tools">
-		
+
 			<div id="WorkWithStrings" class="container-fluid tab-pane fade in active">
 			<div class="row">
 				<div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
@@ -164,18 +163,18 @@
 								<span>
 									<label for="Highlight1">Выделить/</label><label for="Highlight2">снять выделение</label> строк
 								</span>
-								
+
 								<br><label class="radio-answer">
 									<input type=radio class="form-check-input" name="Highlight" id="Highlight1" value="on" checked>
 									Выделить строки
 								</label>
-									
+
 								<br><label class="radio-answer">
 									<input type=radio class="form-check-input" name="Highlight" id="Highlight2" value="off">
 									Снять выделение строк
 								</label>
 							</div>
-								
+
 							<div class="panel-div">
 								<label>
 									Укажите диапазон выделения
@@ -192,7 +191,7 @@
 						</div>
 					</div>
 				</div>
-					
+
 				<div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
 					<div class="panel panel-default">
 						<div class="panel-heading">Случайное выделение строк</div>
@@ -203,7 +202,7 @@
 									<br><input type=number class="form-control" id="RandomHighlightCount">
 								</label>
 							</div>
-								
+
 							<div class="panel-div">
 								<label>
 									Укажите диапазон выделения
@@ -216,12 +215,12 @@
 									</div>
 								</label>
 							</div>
-								
+
 							<br><input type=button value="Выделить случайные строки" class="btn btn-default btn-2line" id="RandomHighlightStr">
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
 					<div class="panel panel-default">
 						<div class="panel-heading">Редактирование</div>
@@ -235,7 +234,7 @@
 							</div>
 
 							<hr>
-							
+
 							<div class="div-inline-block">
 								<button class="btn btn-default btn-2line" id="DeleteStr">Удалить выделенные<br/>строки</button>
 							</div>
@@ -247,41 +246,41 @@
 				</div>
 			</div>
 			</div>
-			
+
 			<div id="WorkWithColumns" class="container-fluid tab-pane fade">
-			
+
 			<div class="row">
 				<div class="col-lg-4 col-md-8 col-sm-12 col-xs-12">
 					<div class="panel panel-default">
 						<div class="panel-heading">Создать новый столбец</div>
 						<div class="container-fluid panel-body">
-							
+
 							<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12" for="NewColumnId">Имя столбца</label>
 							<div class="row">
 								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 									<input class="form-control" id=NewColumnId>
 								</div>
 							</div>
-							
+
 							<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12" for="NewColumnType">Тип данных</label>
 							<div class="row">
 								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 									<select class="form-control" id=NewColumnType>
-										<option value="INT">Целый</option> 
-										<option value="DOUBLE">Вещественный</option> 
-										<option value="VARCHAR(255)">Текст</option> 
-										<option value="VARCHAR(255)">Другой</option> 
+										<option value="INT">Целый</option>
+										<option value="DOUBLE">Вещественный</option>
+										<option value="VARCHAR(255)">Текст</option>
+										<option value="VARCHAR(255)">Другой</option>
 									</select>
 								</div>
 							</div>
-							
+
 							<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12" for="NewColumnDefault">Значение по умолчанию</label>
 							<div class="row">
 								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 									<input class="form-control" id=NewColumnDefault>
 								</div>
 							</div>
-						
+
 							<br><input name=DataEdit type=button value="Добавить столбец" class="btn btn-default" id="InsertColumn">
 							<!-- <input name=DataEdit type=button value="Добавить столбец" class="btn btn-default" onclick="InsertColumn()"> -->
 							<!-- <input name=DataEdit type=button value="Удалить столбец" class="btn btn-default" onclick="DeleteColumn()"> -->
@@ -289,10 +288,10 @@
 						</div>
 					</div>
 				</div>
-			</div>	
 			</div>
-			
-			
+			</div>
+
+
 			<div id="WorkWithData" class="container-fluid tab-pane fade">
 			<div class="row">
 			<div class="col-lg-6 col-md-7 col-sm-12 col-xs-12">
@@ -304,7 +303,7 @@
 							<label for="ImportBP">Импортируемая БП</label>
 							<br><label for="IdInFile">Колонка ID</label>
 						</div>
-					
+
 						<div class="div-inline-block right">
 							<div class="btn-file">
 								<div id="ImportBP" class="btn btn-default btn-2line">
@@ -315,8 +314,8 @@
 							</div>
 							<br><input type=checkbox id="IdInFile">
 						</div>
-					
-						
+
+
 						<br><input type=button class="btn btn-default" value="Загрузить данные" id="AddDataFromFile">
 						<hr>
 						<form action="/ExportToFile" method="post" enctype="multipart/form-data">
@@ -329,34 +328,34 @@
 								<input type=submit name="ExportToFile" id="ExportTestSampleToFile" class="btn btn-default btn-2line" value="Экспорт тестовой выборки">
 							</div>
 							<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-								<input type=submit name="ExportToFile" id="ExportTrainSampleToFile" class="btn btn-default btn-2line" value="Экспорт обучающей выборки">	
-							</div>							
+								<input type=submit name="ExportToFile" id="ExportTrainSampleToFile" class="btn btn-default btn-2line" value="Экспорт обучающей выборки">
+							</div>
 						</div>
 						</div>
 							<input type=text name="HiddenTableChoice" hidden>
 							<input type=text name="HiddenTestSample" hidden>
-						
+
 						</form>
-					</div>				
+					</div>
 				</div>
 			</div>
 			</div>
 			</div>
-			
+
 			<div id="WorkWithTable" class="container-fluid tab-pane fade">
 			<div class="row">
 			<div class="col-lg-6 col-md-7 col-sm-8 col-xs-12">
 				<div class="panel panel-default">
 					<div class="panel-heading">Работа с загруженными таблицами</div>
 					<div class="panel-body">
-						
+
 							<ul id="TabSelect" class="list-group prokrutka">
 								{% for i in TabList %}
 									<a class="list-group-item">{{ i }}</a>
 								{% endfor %}
 							</ul>
-						
-						
+
+
 						<div class="div-inline-block">
 							<button class="btn btn-default" id="DeleteBP">Удалить<br/>выбранные БП</button>
 						</div>
@@ -368,28 +367,28 @@
 			</div>
 			</div>
 			</div>
-		
+
 			<div id="ImproveEfficiency" class="container-fluid tab-pane fade">
 			<div class="row">
 				<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
 					<div class="panel panel-default">
 						<div class="panel-heading">Оптимизация БП</div>
 						<div class="panel-body">
-						
+
 						<div class="container-fluid">
-							
+
 							<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12" for="OptAlgol">Способ сокращения БП</label>
 							<div class="row">
 								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
 									<select id="OptAlgol" class="form-control">
 										<option value=Classification selected>Алгоритм классификации</option>
-										<option value=KMeans>Алгоритм k-средних</option>				
+										<option value=KMeans>Алгоритм k-средних</option>
 										<option value=TimurAlgorithm>Алгоритм Тимура</option>
 									</select>
 								</div>
 							</div>
 						</div>
-						
+
 						<div id="DivClassification" class="container-fluid">
 							<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12" for="ClassSimilarity">Степень сходства</label>
 							<div class="row">
@@ -397,7 +396,7 @@
 									<input id='ClassSimilarity' maxlength="20" size="20" class="form-control">
 								</div>
 							</div>
-							
+
 							<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12" for="ClassMetric">Выбор метрики</label>
 							<div class="row">
 								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
@@ -409,8 +408,8 @@
 								</div>
 							</div>
 						</div>
-						
-						
+
+
 						<div id="DivKMeans" class="container-fluid" hidden>
 							<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12" for="KMClusterCount">Количество кластеров</label>
 							<div class="row">
@@ -418,7 +417,7 @@
 									<input id='KMClusterCount' maxlength="20" size="20" class="form-control">
 								</div>
 							</div>
-							
+
 							<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12" for="KMPrimaryCenter">Начальные кластеры</label>
 							<div class="row">
 								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
@@ -429,7 +428,7 @@
 									</select>
 								</div>
 							</div>
-							
+
 							<label class="col-lg-6 col-md-6 col-sm-6 col-xs-12" for="KMMetric">Выбор метрики</label>
 							<div class="row">
 								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
@@ -441,16 +440,16 @@
 								</div>
 							</div>
 						</div>
-						
-						
-						
-						
-						
-						
+
+
+
+
+
+
 							<!-- <div class="div-inline-block left"> -->
 								<!-- <label for="OptAlgol">Способ сокращения БП</label> -->
 							<!-- </div> -->
-							
+
 							<!-- <div class="div-inline-block right"> -->
 								<!-- <select id="OptAlgol" class="form-control"> -->
 									<!-- <option value=Classification selected>Алгоритм классификации</option> -->
@@ -501,7 +500,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
 					<div class="panel panel-default">
 						<div class="panel-heading">Индексация БП</div>
@@ -514,7 +513,7 @@
 				</div>
 			</div>
 			</div>
-			
+
 		</div>
 	</div>
 
